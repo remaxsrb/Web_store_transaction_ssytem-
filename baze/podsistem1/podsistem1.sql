@@ -26,7 +26,7 @@ CREATE TABLE `Adresa` (
   `idAdresa` int unsigned NOT NULL,
   `Ulica` varchar(45) NOT NULL,
   `Broj` int NOT NULL,
-  PRIMARY KEY (`idAdresa`)
+  PRIMARY KEY (`idAdresa`,`Ulica`,`Broj`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS `Grad`;
 CREATE TABLE `Grad` (
   `idGrad` int unsigned NOT NULL AUTO_INCREMENT,
   `Naziv` varchar(45) NOT NULL,
+  `Drzava` varchar(45) NOT NULL,
   PRIMARY KEY (`idGrad`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -60,7 +61,7 @@ CREATE TABLE `Grad` (
 
 LOCK TABLES `Grad` WRITE;
 /*!40000 ALTER TABLE `Grad` DISABLE KEYS */;
-INSERT INTO `Grad` VALUES (1,'Beograd'),(2,'Novi Sad'),(3,'Prizren'),(4,'Nis');
+INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Prizren','Srbija'),(4,'Nis','Srbija');
 /*!40000 ALTER TABLE `Grad` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -77,16 +78,17 @@ CREATE TABLE `Korisnik` (
   `Sifra` varchar(45) NOT NULL,
   `Ime` varchar(45) NOT NULL,
   `Prezime` varchar(45) NOT NULL,
-  `Adresa` int unsigned NOT NULL,
-  `Grad` int unsigned NOT NULL,
-  `Novac` int NOT NULL,
-  PRIMARY KEY (`idKorisnik`),
+  `idAdresa` int unsigned NOT NULL,
+  `idGrad` int unsigned NOT NULL,
+  `Novac` float NOT NULL,
+  PRIMARY KEY (`idKorisnik`,`KorisnickoIme`),
   UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`),
-  KEY `fk_Grad_idx` (`Grad`),
-  KEY `fk_Adresa_idx` (`Adresa`),
-  CONSTRAINT `fk_Adresa` FOREIGN KEY (`Adresa`) REFERENCES `Adresa` (`idAdresa`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_Grad` FOREIGN KEY (`Grad`) REFERENCES `Grad` (`idGrad`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+  UNIQUE KEY `idKorisnik_UNIQUE` (`idKorisnik`),
+  KEY `fk_Grad_idx` (`idGrad`),
+  KEY `fk_Adresa_idx` (`idAdresa`),
+  CONSTRAINT `fk_Adresa` FOREIGN KEY (`idAdresa`) REFERENCES `Adresa` (`idAdresa`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_Grad` FOREIGN KEY (`idGrad`) REFERENCES `Grad` (`idGrad`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +97,7 @@ CREATE TABLE `Korisnik` (
 
 LOCK TABLES `Korisnik` WRITE;
 /*!40000 ALTER TABLE `Korisnik` DISABLE KEYS */;
-INSERT INTO `Korisnik` VALUES (1,'remax','123','Marko','Jovanovic',2,1,20000);
+INSERT INTO `Korisnik` VALUES (1,'remax','123','Marko','Jovanovic',2,1,20000),(2,'jokan','123','Slavisa','Jokanovic',1,1,50000);
 /*!40000 ALTER TABLE `Korisnik` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -108,4 +110,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-09 22:45:14
+-- Dump completed on 2023-01-12 12:45:02
