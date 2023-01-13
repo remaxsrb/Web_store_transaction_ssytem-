@@ -29,7 +29,7 @@ CREATE TABLE `Artikal` (
   `Cena` float unsigned NOT NULL,
   `Popust` int unsigned NOT NULL,
   `Kategorija` int unsigned NOT NULL,
-  PRIMARY KEY (`idArtikal`,`Naziv`),
+  PRIMARY KEY (`idArtikal`),
   UNIQUE KEY `idArtikal_UNIQUE` (`idArtikal`),
   UNIQUE KEY `Naziv_UNIQUE` (`Naziv`),
   UNIQUE KEY `Kategorija_UNIQUE` (`Kategorija`),
@@ -190,4 +190,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-12 12:45:37
+-- Dump completed on 2023-01-13 11:19:49
