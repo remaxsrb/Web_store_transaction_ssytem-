@@ -7,6 +7,8 @@ package com.mycompany.klijent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  *
@@ -59,7 +61,7 @@ public class Klijent {
         System.out.println("\t13. Dohvatanje svih korisnika");
         System.out.println("\t14. Dohvatanje svih kategorija");
         System.out.println("\t15. Dohvatanje svih artikala koje prodaje korisnik koji je poslao zahtev");
-        System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahteva");
+        System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahtev");
         System.out.println("\t17. Dohvatanje svih narudžbina korisnika koji je poslao zahtev");
         System.out.println("\t18. Dohvatanje svih narudžbina");
         System.out.println("\t19. Dohvatanje svih transakcija");
@@ -68,6 +70,8 @@ public class Klijent {
         
         String cityName, cityCountry, username, userFirstName, userLastName,
                 userStreet, categoryName, articleName;
+        
+        int idKorisnik, idArtikal; 
         
         while(true) 
         {
@@ -83,6 +87,7 @@ public class Klijent {
                     cityName = input.readLine();
                     System.out.println("Naziv drzave: ");
                     cityCountry = input.readLine();
+                    createCity(cityName, cityName);
                     break;
                 case CREATE_USER:
                     
@@ -164,5 +169,19 @@ public class Klijent {
     public static void main(String[] args) {
         Klijent k = create();
         k.run();
+    }
+    
+    private void createCity(String cityName, String countryName) 
+    {
+        String URLAddress = "http://localhost:8080/server/api/cities";
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+        } catch (MalformedURLException e) {e.printStackTrace();}
+            
+        
     }
 }

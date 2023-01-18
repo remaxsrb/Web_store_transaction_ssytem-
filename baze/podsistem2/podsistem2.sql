@@ -57,6 +57,7 @@ DROP TABLE IF EXISTS `Kategorija`;
 CREATE TABLE `Kategorija` (
   `idKategorija` int unsigned NOT NULL AUTO_INCREMENT,
   `Naziv` varchar(45) NOT NULL,
+  `idNadKategorija` int unsigned DEFAULT NULL,
   PRIMARY KEY (`idKategorija`),
   UNIQUE KEY `idKategorija_UNIQUE` (`idKategorija`),
   UNIQUE KEY `Naziv_UNIQUE` (`Naziv`)
@@ -69,7 +70,7 @@ CREATE TABLE `Kategorija` (
 
 LOCK TABLES `Kategorija` WRITE;
 /*!40000 ALTER TABLE `Kategorija` DISABLE KEYS */;
-INSERT INTO `Kategorija` VALUES (10,'Duks'),(12,'Duks bez kapuljace'),(11,'Duks sa kapuljacom'),(8,'Epska fantastika'),(7,'Fantstika'),(3,'Fudbalska lopta'),(5,'Knjiga'),(2,'Kosarkaska lopta'),(1,'Lopta'),(9,'Naucna fantastika'),(4,'Odbojkaska lopta'),(6,'Triler');
+INSERT INTO `Kategorija` VALUES (1,'Lopta',NULL),(2,'Kosarkaska lopta',1),(3,'Fudbalska lopta',1),(4,'Odbojkaska lopta',1),(5,'Knjiga',NULL),(6,'Triler',5),(7,'Fantstika',5),(8,'Epska fantastika',7),(9,'Naucna fantastika',7),(10,'Duks',NULL),(11,'Duks sa kapuljacom',10),(12,'Duks bez kapuljace',10);
 /*!40000 ALTER TABLE `Kategorija` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -81,14 +82,12 @@ DROP TABLE IF EXISTS `Korisnik`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Korisnik` (
-  `idKorisnik` int unsigned NOT NULL AUTO_INCREMENT,
   `KorisnickoIme` varchar(45) NOT NULL,
   `Novac` float unsigned NOT NULL,
   `Sifra` varchar(45) NOT NULL,
-  PRIMARY KEY (`idKorisnik`,`KorisnickoIme`),
-  UNIQUE KEY `idKorisnik_UNIQUE` (`idKorisnik`),
+  PRIMARY KEY (`KorisnickoIme`),
   UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,7 +96,7 @@ CREATE TABLE `Korisnik` (
 
 LOCK TABLES `Korisnik` WRITE;
 /*!40000 ALTER TABLE `Korisnik` DISABLE KEYS */;
-INSERT INTO `Korisnik` VALUES (1,'remax',20000,'123'),(2,'jokan',50000,'123');
+INSERT INTO `Korisnik` VALUES ('jokan',50000,'123'),('remax',20000,'123');
 /*!40000 ALTER TABLE `Korisnik` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -111,11 +110,11 @@ DROP TABLE IF EXISTS `Korpa`;
 CREATE TABLE `Korpa` (
   `idKorpa` int unsigned NOT NULL AUTO_INCREMENT,
   `UkupnaCena` float unsigned NOT NULL,
-  `idKorisnik` int unsigned NOT NULL,
+  `KorisnickoIme` varchar(45) NOT NULL,
   PRIMARY KEY (`idKorpa`),
   UNIQUE KEY `idKorpa_UNIQUE` (`idKorpa`),
-  UNIQUE KEY `idKorisnik_UNIQUE` (`idKorisnik`),
-  CONSTRAINT `fk_Korisnik` FOREIGN KEY (`idKorisnik`) REFERENCES `Korisnik` (`idKorisnik`) ON DELETE RESTRICT ON UPDATE CASCADE
+  UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`),
+  CONSTRAINT `fk_Korisnik` FOREIGN KEY (`KorisnickoIme`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -129,33 +128,6 @@ LOCK TABLES `Korpa` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `Potkategorija`
---
-
-DROP TABLE IF EXISTS `Potkategorija`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `Potkategorija` (
-  `idPotkategorija` int unsigned NOT NULL,
-  `idNadKategorija` int unsigned NOT NULL,
-  PRIMARY KEY (`idPotkategorija`,`idNadKategorija`),
-  KEY `fk_Nadkategorija_idx` (`idNadKategorija`),
-  CONSTRAINT `fk_Nadkategorija` FOREIGN KEY (`idNadKategorija`) REFERENCES `Kategorija` (`idKategorija`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_Potkategorija` FOREIGN KEY (`idPotkategorija`) REFERENCES `Kategorija` (`idKategorija`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Potkategorija`
---
-
-LOCK TABLES `Potkategorija` WRITE;
-/*!40000 ALTER TABLE `Potkategorija` DISABLE KEYS */;
-INSERT INTO `Potkategorija` VALUES (2,1),(3,1),(4,1),(6,5),(7,5),(8,7),(9,7),(11,10),(12,10);
-/*!40000 ALTER TABLE `Potkategorija` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `Sadrzi`
 --
 
@@ -165,6 +137,7 @@ DROP TABLE IF EXISTS `Sadrzi`;
 CREATE TABLE `Sadrzi` (
   `idKorpa` int unsigned NOT NULL,
   `idArtikal` int unsigned NOT NULL,
+  `KolicinaArtikla` int unsigned NOT NULL,
   PRIMARY KEY (`idKorpa`,`idArtikal`),
   KEY `fk_Artikal_idx` (`idArtikal`),
   CONSTRAINT `fk_Artikal` FOREIGN KEY (`idArtikal`) REFERENCES `Artikal` (`idArtikal`) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -190,4 +163,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-13 11:19:49
+-- Dump completed on 2023-01-18 14:17:50

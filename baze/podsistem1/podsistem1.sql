@@ -23,11 +23,12 @@ DROP TABLE IF EXISTS `Adresa`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Adresa` (
-  `idAdresa` int unsigned NOT NULL,
+  `idAdresa` int unsigned NOT NULL AUTO_INCREMENT,
   `Ulica` varchar(45) NOT NULL,
-  `Broj` int NOT NULL,
-  PRIMARY KEY (`idAdresa`,`Ulica`,`Broj`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+  `Broj` int unsigned NOT NULL,
+  PRIMARY KEY (`idAdresa`),
+  UNIQUE KEY `iAdresa_UNIQUE` (`idAdresa`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,7 +37,7 @@ CREATE TABLE `Adresa` (
 
 LOCK TABLES `Adresa` WRITE;
 /*!40000 ALTER TABLE `Adresa` DISABLE KEYS */;
-INSERT INTO `Adresa` VALUES (1,'Humska',1),(2,'Praska',34),(3,'Sutjeska',2),(4,'Dusanov grad bb',38400),(5,'Generala Milojka Lesjanina',14);
+INSERT INTO `Adresa` VALUES (1,'Dusanov grad bb',38400),(2,'Generala Milojka Lesjanina',14),(3,'Humska',1),(4,'Praska',34),(5,'Sutjeska',2);
 /*!40000 ALTER TABLE `Adresa` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -51,7 +52,8 @@ CREATE TABLE `Grad` (
   `idGrad` int unsigned NOT NULL AUTO_INCREMENT,
   `Naziv` varchar(45) NOT NULL,
   `Drzava` varchar(45) NOT NULL,
-  PRIMARY KEY (`idGrad`)
+  PRIMARY KEY (`idGrad`),
+  UNIQUE KEY `idGrad_UNIQUE` (`idGrad`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -73,7 +75,6 @@ DROP TABLE IF EXISTS `Korisnik`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Korisnik` (
-  `idKorisnik` int unsigned NOT NULL AUTO_INCREMENT,
   `KorisnickoIme` varchar(45) NOT NULL,
   `Sifra` varchar(45) NOT NULL,
   `Ime` varchar(45) NOT NULL,
@@ -81,14 +82,13 @@ CREATE TABLE `Korisnik` (
   `idAdresa` int unsigned NOT NULL,
   `idGrad` int unsigned NOT NULL,
   `Novac` float NOT NULL,
-  PRIMARY KEY (`idKorisnik`,`KorisnickoIme`),
+  PRIMARY KEY (`KorisnickoIme`),
   UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`),
-  UNIQUE KEY `idKorisnik_UNIQUE` (`idKorisnik`),
   KEY `fk_Grad_idx` (`idGrad`),
   KEY `fk_Adresa_idx` (`idAdresa`),
   CONSTRAINT `fk_Adresa` FOREIGN KEY (`idAdresa`) REFERENCES `Adresa` (`idAdresa`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_Grad` FOREIGN KEY (`idGrad`) REFERENCES `Grad` (`idGrad`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,7 +97,7 @@ CREATE TABLE `Korisnik` (
 
 LOCK TABLES `Korisnik` WRITE;
 /*!40000 ALTER TABLE `Korisnik` DISABLE KEYS */;
-INSERT INTO `Korisnik` VALUES (1,'remax','123','Marko','Jovanovic',2,1,20000),(2,'jokan','123','Slavisa','Jokanovic',1,1,50000);
+INSERT INTO `Korisnik` VALUES ('jokan','123','Slavisa','Jokanovic',1,1,50000),('remax','123','Marko','Jovanovic',2,1,20000);
 /*!40000 ALTER TABLE `Korisnik` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -110,4 +110,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-12 12:45:02
+-- Dump completed on 2023-01-18 14:20:49
