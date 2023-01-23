@@ -7,6 +7,8 @@ package com.mycompany.klijent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -87,7 +89,7 @@ public class Klijent {
                     cityName = input.readLine();
                     System.out.println("Naziv drzave: ");
                     cityCountry = input.readLine();
-                    createCity(cityName, cityName);
+                    createCity(cityName, cityCountry);
                     break;
                 case CREATE_USER:
                     
@@ -179,6 +181,39 @@ public class Klijent {
         
         try {
             URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+         
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+                
+                StringBuffer queryParameters = new StringBuffer();
+               
+                queryParameters.append("cityName=");
+                queryParameters.append(cityName);
+                queryParameters.append("&");
+                queryParameters.append("cityCountry=");
+                queryParameters.append(countryName);
+                
+                OutputStream output = myHttpConnection.getOutputStream();
+                output.write(queryParameters.toString().getBytes());
+                output.flush();
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {e.printStackTrace();}
             
         } catch (MalformedURLException e) {e.printStackTrace();}
             
