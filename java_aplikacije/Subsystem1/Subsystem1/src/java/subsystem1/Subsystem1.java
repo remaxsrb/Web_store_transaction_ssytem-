@@ -44,6 +44,24 @@ public class Subsystem1 {
     @Resource(lookup="myQueue")
     static Queue serverQueue;
     
+    //kreirati po jednog proizvodjaca i jednog potrosaca za svaku vezu sa drugim podsistemom
+    
+    @Resource(lookup="subsystem1_subsystem2_queue")
+    static Queue subsystem1_subsystem2_queue; // producer
+    JMSProducer subsystem2producer;
+    
+    @Resource(lookup="subsystem2_subsystem1_queue")
+    static Queue subsystem2_subsystem1_queue; // consumer
+    JMSConsumer subsystem2consumer;
+    
+    @Resource(lookup="subsystem1_subsystem3_queue")
+    static Queue subsystem1_subsystem3_queue; // producer
+    JMSProducer subsystem3sroducer;
+    
+    @Resource(lookup="subsystem3_subsystem1_queue")
+    static Queue subsystem3_subsystem1_queue; // consumer
+    JMSConsumer subsystem3consumer;
+    
     JMSContext context;
     JMSConsumer consumer;
     JMSProducer producer;
