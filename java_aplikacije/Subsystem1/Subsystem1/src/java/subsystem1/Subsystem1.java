@@ -48,24 +48,24 @@ public class Subsystem1 {
     
     @Resource(lookup="subsystem1_subsystem2_queue")
     static Queue subsystem1_subsystem2_queue; // producer
-    JMSProducer subsystem2producer;
+    JMSProducer subsystem1_subsystem2_producer;
     
     @Resource(lookup="subsystem2_subsystem1_queue")
     static Queue subsystem2_subsystem1_queue; // consumer
-    JMSConsumer subsystem2consumer;
+    JMSConsumer subsystem2_subsystem1_consumer;
     
     @Resource(lookup="subsystem1_subsystem3_queue")
     static Queue subsystem1_subsystem3_queue; // producer
-    JMSProducer subsystem3sroducer;
+    JMSProducer subsystem1_subsystem3_producer;
     
     @Resource(lookup="subsystem3_subsystem1_queue")
     static Queue subsystem3_subsystem1_queue; // consumer
-    JMSConsumer subsystem3consumer;
+    JMSConsumer subsystem3_subsystem1_consumer;
     
     JMSContext context;
     JMSConsumer consumer;
     JMSProducer producer;
-    
+    //==========================================================================
     private TextMessage createCity(String cityName, String cityCountry) 
     {
         TextMessage textMessage = null;
@@ -157,8 +157,8 @@ public class Subsystem1 {
     
     public static void main(String[] args) {
         
-        Subsystem1 p1 = new Subsystem1();
-        p1.run();
+        Subsystem1 sub1 = new Subsystem1();
+        sub1.run();
     }
     
 }
