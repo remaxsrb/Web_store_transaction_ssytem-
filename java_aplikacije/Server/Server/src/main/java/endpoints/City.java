@@ -4,6 +4,7 @@
  */
 package endpoints;
 
+import entities.Grad;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -15,12 +16,15 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -83,4 +87,38 @@ public class City {
     return Response.status(OK).entity("City successfuly created!").build();
     }
     
+    @GET
+    public Response getCities() {
+    
+    ArrayList<Grad> cities = null;
+        
+        try {
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            // message
+            TextMessage msg = context.createTextMessage("request");
+            msg.setByteProperty("request", ALL_CITIES);
+            msg.setIntProperty("podsistem", 1);
+            
+            producer.send(topic, msg);
+            
+            // response
+            Message mess = consumer.receive();
+            if (!(mess instanceof ObjectMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            ObjectMessage objMsg = (ObjectMessage) mess;
+            cities = (ArrayList<Grad>) objMsg.getObject();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Grad.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassCastException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip objekta!").build();
+        }
+        
+        return Response.status(OK).entity(new GenericEntity<List<Grad>>(cities){}).build();
+    }
+       
 }

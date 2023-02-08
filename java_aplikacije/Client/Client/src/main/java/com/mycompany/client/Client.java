@@ -8,9 +8,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.CharacterData;
+import org.xml.sax.InputSource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -122,7 +135,7 @@ public class Client {
                     
                     break;
                 case ALL_CITIES:
-                    
+                    getCities();
                     break;
                 case ALL_USERS:
                     
@@ -173,6 +186,22 @@ public class Client {
         c.run();
     }
     
+    private static String getCharacterDataFromElement(Element e) {
+        Node child = e.getFirstChild();
+        if (child instanceof CharacterData cd) {
+            return cd.getData();
+        }
+        return "?";
+    }
+    
+    private static String getCharacterDataFromElement(Element e, String field) {
+        Node child = e.getFirstChild();
+        if (child instanceof CharacterData cd) {
+            return cd.getData();
+        }
+        return getCharacterDataFromElement((Element) e.getElementsByTagName(field).item(0));
+    }
+    
     private void createCity(String cityName, String countryName) 
     {
         String URLAddress = "http://localhost:8080/server/api/cities";
@@ -218,5 +247,58 @@ public class Client {
         } catch (MalformedURLException e) {e.printStackTrace();}
             
         
+    }
+    
+    
+    private void getCities() 
+    {
+        String URLAddress = "http://localhost:8080/server/api/cities";
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = in.readLine()) != null) {
+			try {
+                            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			    DocumentBuilder db = dbf.newDocumentBuilder();
+			    InputSource is = new InputSource();
+			    is.setCharacterStream(new StringReader(inputString));
+
+			    Document doc = db.parse(is);
+			    NodeList nodes = doc.getElementsByTagName("Grad");
+
+		            // iterate city elements
+                            for (int i = 0; i < nodes.getLength(); i++) {
+				Element element = (Element) nodes.item(i);
+                                
+                                String idGrad = getCharacterDataFromElement((Element) element.getElementsByTagName("idGrad").item(0));
+                                String naziv = getCharacterDataFromElement((Element) element.getElementsByTagName("Naziv").item(0));
+                                String drzava = getCharacterDataFromElement((Element) element.getElementsByTagName("Drzava").item(0));
+
+                           
+                                System.out.println("idGrad: " + idGrad + "\tNaziv: " + naziv + "\tDrzava: " + drzava);
+                                
+			    }
+			} catch (Exception e) { e.printStackTrace(); }   
+		}
+		in.close();   
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {e.printStackTrace();}
     }
 }

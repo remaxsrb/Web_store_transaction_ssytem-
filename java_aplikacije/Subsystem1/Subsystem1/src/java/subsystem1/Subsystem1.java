@@ -5,6 +5,7 @@
 package subsystem1;
 
 import entities.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +16,7 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
@@ -31,6 +33,11 @@ import javax.persistence.Persistence;
 public class Subsystem1 {
     
     private static final byte CREATE_CITY = 1;
+    private static final byte CREATE_USER = 2;
+    private static final byte WIRE_MONEY_TO_USER = 3;
+    private static final byte CHANGE_USER_ADDRESS = 4;
+    private static final byte ALL_CITIES = 12;
+    private static final byte ALL_USERS = 13;
     
     static EntityManagerFactory emf = Persistence.createEntityManagerFactory("Subsystem1PU");
     static EntityManager em = emf.createEntityManager();
@@ -66,6 +73,28 @@ public class Subsystem1 {
     JMSConsumer consumer;
     JMSProducer producer;
     //==========================================================================
+    
+    private TextMessage createUser() {return null;}
+    
+    private TextMessage wireMoneyToUser() {return null;}
+    
+    private TextMessage updateUserAddressAndCity() {return null;}
+    
+    private ObjectMessage getCities() {
+        
+        List<Grad> mesta = em.createNamedQuery("Grad.findAll", Grad.class).getResultList();
+        
+        ArrayList<Grad> m = new ArrayList<>();
+        
+        for (Grad mesto : mesta) 
+            m.add(mesto);
+        
+        return context.createObjectMessage(m);
+        
+    }
+    
+    private ObjectMessage getUsers() {return null;}
+    
     private TextMessage createCity(String cityName, String cityCountry) 
     {
         TextMessage textMessage = null;
@@ -117,6 +146,11 @@ public class Subsystem1 {
         return textMessage;
     }
     
+    
+    private void subsystem2Listener(Message msg) {}
+    
+    private void subsystem3Listener(Message msg) {}
+    
     private void run() 
     {
         String msgSelector = "podsistem=1";
@@ -125,6 +159,14 @@ public class Subsystem1 {
         context.setClientID("1");
         consumer = context.createDurableConsumer(topic, "sub1", msgSelector, false);
         producer = context.createProducer();
+        
+        
+//        subsystem1_subsystem2_producer = context.createProducer();
+//        subsystem2_subsystem1_consumer = context.createConsumer(subsystem2_subsystem1_queue);
+//        
+//        subsystem1_subsystem3_producer = context.createProducer();
+//        subsystem3_subsystem1_consumer = context.createConsumer(subsystem3_subsystem1_queue);
+        
         
         String cityName, cityCountry;
         
@@ -144,6 +186,10 @@ public class Subsystem1 {
                         cityName = textMessage.getStringProperty("cityName");
                         cityCountry = textMessage.getStringProperty("cityCountry");
                         response = createCity(cityName, cityCountry);
+                        break;
+                        
+                    case ALL_CITIES:
+                        response = getCities();
                         break;
                 }
                 
