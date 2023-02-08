@@ -12,6 +12,8 @@
       <property name="javax.persistence.jdbc.user" value="remax"/>
       <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
       <property name="javax.persistence.jdbc.password" value="Partizan1!"/>
+      <property name="eclipselink.jdbc.property.useSSL" value="false"/>
+      <property name="eclipselink.jdbc.property.requireSSL" value="false"/>
     </properties>
   </persistence-unit>
 </persistence>
