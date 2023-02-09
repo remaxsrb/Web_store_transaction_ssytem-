@@ -48,6 +48,7 @@ public class City {
     Queue queue;
     
     @POST
+    @Path("addCity/{cityName}/{cityCountry}")
     public Response createCity(@FormParam("cityName") String cityName,@FormParam("cityCountry") String cityCountry ) {
         
         try {
@@ -88,6 +89,7 @@ public class City {
     }
     
     @GET
+    @Path("getcities")
     public Response getCities() {
     
     ArrayList<Grad> cities = null;

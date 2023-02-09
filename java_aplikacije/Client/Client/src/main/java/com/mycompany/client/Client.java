@@ -204,11 +204,12 @@ public class Client {
     
     private void createCity(String cityName, String countryName) 
     {
-        String URLAddress = "http://localhost:8080/server/api/cities";
-        String inputString = null;
-        int responseCode = 0;
+        String errMsg = "Greska pri povezivanju";
         
         try {
+            String URLAddress = "http://localhost:8080/Server/store/cities/addCity/cityName/countryName";
+            String inputString = null;
+            int responseCode = 0;
             URL url = new URL(URLAddress);
             
             try {
@@ -244,7 +245,7 @@ public class Client {
                 
             } catch (IOException e) {e.printStackTrace();}
             
-        } catch (MalformedURLException e) {e.printStackTrace();}
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
             
         
     }
@@ -252,7 +253,10 @@ public class Client {
     
     private void getCities() 
     {
-        String URLAddress = "http://localhost:8080/server/api/cities";
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/cities/getcities";
         String inputString = null;
         int responseCode = 0;
         
@@ -271,6 +275,10 @@ public class Client {
                 
                 BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
                 while ((inputString = in.readLine()) != null) {
+                    
+                        System.out.println("Primio niz gradova");
+
+                    
 			try {
                             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			    DocumentBuilder db = dbf.newDocumentBuilder();
@@ -278,15 +286,15 @@ public class Client {
 			    is.setCharacterStream(new StringReader(inputString));
 
 			    Document doc = db.parse(is);
-			    NodeList nodes = doc.getElementsByTagName("Grad");
+			    NodeList nodes = doc.getElementsByTagName("grad");
 
 		            // iterate city elements
                             for (int i = 0; i < nodes.getLength(); i++) {
 				Element element = (Element) nodes.item(i);
                                 
                                 String idGrad = getCharacterDataFromElement((Element) element.getElementsByTagName("idGrad").item(0));
-                                String naziv = getCharacterDataFromElement((Element) element.getElementsByTagName("Naziv").item(0));
-                                String drzava = getCharacterDataFromElement((Element) element.getElementsByTagName("Drzava").item(0));
+                                String naziv = getCharacterDataFromElement((Element) element.getElementsByTagName("naziv").item(0));
+                                String drzava = getCharacterDataFromElement((Element) element.getElementsByTagName("drzava").item(0));
 
                            
                                 System.out.println("idGrad: " + idGrad + "\tNaziv: " + naziv + "\tDrzava: " + drzava);
@@ -299,6 +307,6 @@ public class Client {
        
             } catch (IOException e) {e.printStackTrace();}
             
-        } catch (MalformedURLException e) {e.printStackTrace();}
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
 }

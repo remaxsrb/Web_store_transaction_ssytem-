@@ -82,14 +82,16 @@ public class Subsystem1 {
     
     private ObjectMessage getCities() {
         
-        List<Grad> mesta = em.createNamedQuery("Grad.findAll", Grad.class).getResultList();
+        System.out.println("subsystem1.Subsystem1.getCities()");
         
-        ArrayList<Grad> m = new ArrayList<>();
+        List<Grad> cities = em.createNamedQuery("Grad.findAll", Grad.class).getResultList();
         
-        for (Grad mesto : mesta) 
-            m.add(mesto);
+        ArrayList<Grad> g = new ArrayList<>();
         
-        return context.createObjectMessage(m);
+        for (Grad city : cities) 
+            g.add(city);
+        
+        return context.createObjectMessage(g);
         
     }
     
