@@ -82,8 +82,6 @@ public class Subsystem1 {
     
     private ObjectMessage getCities() {
         
-        System.out.println("subsystem1.Subsystem1.getCities()");
-        
         List<Grad> cities = em.createNamedQuery("Grad.findAll", Grad.class).getResultList();
         
         ArrayList<Grad> g = new ArrayList<>();
@@ -95,7 +93,18 @@ public class Subsystem1 {
         
     }
     
-    private ObjectMessage getUsers() {return null;}
+    private ObjectMessage getUsers() 
+    {
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findAll", Korisnik.class).getResultList();
+        
+        ArrayList<Korisnik> k = new ArrayList<>();
+        
+        for (Korisnik user : users) 
+            k.add(user);
+        
+        return context.createObjectMessage(k);
+    }
     
     private TextMessage createCity(String cityName, String cityCountry) 
     {
@@ -192,6 +201,9 @@ public class Subsystem1 {
                         
                     case ALL_CITIES:
                         response = getCities();
+                        break;
+                    case ALL_USERS:
+                        response = getUsers();
                         break;
                 }
                 

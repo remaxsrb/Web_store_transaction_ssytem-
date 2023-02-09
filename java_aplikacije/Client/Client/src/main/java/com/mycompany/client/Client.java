@@ -138,7 +138,7 @@ public class Client {
                     getCities();
                     break;
                 case ALL_USERS:
-                    
+                    getUsers();
                     break;
                 case ALL_CATEGORIES:
                     
@@ -276,9 +276,6 @@ public class Client {
                 BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
                 while ((inputString = in.readLine()) != null) {
                     
-                        System.out.println("Primio niz gradova");
-
-                    
 			try {
                             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			    DocumentBuilder db = dbf.newDocumentBuilder();
@@ -298,6 +295,67 @@ public class Client {
 
                            
                                 System.out.println("idGrad: " + idGrad + "\tNaziv: " + naziv + "\tDrzava: " + drzava);
+                                
+			    }
+			} catch (Exception e) { e.printStackTrace(); }   
+		}
+		in.close();   
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
+    }
+    
+    private void getUsers() 
+    {
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/users/getusers";
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = in.readLine()) != null) {
+                  
+			try {
+                            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			    DocumentBuilder db = dbf.newDocumentBuilder();
+			    InputSource is = new InputSource();
+			    is.setCharacterStream(new StringReader(inputString));
+
+			    Document doc = db.parse(is);
+			    NodeList nodes = doc.getElementsByTagName("korisnik");
+
+		            // iterate city elements
+                            for (int i = 0; i < nodes.getLength(); i++) {
+				Element element = (Element) nodes.item(i);
+                                
+                                String korisnickoIme = getCharacterDataFromElement((Element) element.getElementsByTagName("korisnickoIme").item(0));
+                                String ime = getCharacterDataFromElement((Element) element.getElementsByTagName("ime").item(0));
+                                String prezime = getCharacterDataFromElement((Element) element.getElementsByTagName("prezime").item(0));
+                                String novac = getCharacterDataFromElement((Element) element.getElementsByTagName("novac").item(0)); 
+                                String broj = getCharacterDataFromElement((Element) element.getElementsByTagName("broj").item(0));
+                                String ulica = getCharacterDataFromElement((Element) element.getElementsByTagName("ulica").item(0));
+                                String grad = getCharacterDataFromElement((Element) element.getElementsByTagName("naziv").item(0));
+                                String drzava = getCharacterDataFromElement((Element) element.getElementsByTagName("drzava").item(0));
+                           
+                                System.out.println("korisnickoIme: " + korisnickoIme + "\time: " + ime + "\tprezime: " + prezime
+                                + "\tnovac: " + novac + "\tulica: " + ulica + "\tbroj: " + broj + "\tgrad: " + grad + "\tdrzava: " + drzava);
                                 
 			    }
 			} catch (Exception e) { e.printStackTrace(); }   

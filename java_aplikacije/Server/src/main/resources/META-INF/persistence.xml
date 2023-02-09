@@ -3,5 +3,7 @@
   <!-- Define Persistence Unit -->
   <persistence-unit name="my_persistence_unit">
     <class>entities.Grad</class>
+    <class>entities.Adresa</class>
+    <class>entities.Korisnik</class>
   </persistence-unit>
 </persistence>
