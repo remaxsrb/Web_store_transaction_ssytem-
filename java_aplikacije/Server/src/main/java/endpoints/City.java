@@ -63,7 +63,7 @@ public class City {
             TextMessage textMessage = context.createTextMessage("request");
             
             textMessage.setByteProperty("request", CREATE_CITY);
-            textMessage.setIntProperty("subsystem", 1);
+            textMessage.setIntProperty("podsistem", 1);
             
             textMessage.setStringProperty("cityName", cityName);
             textMessage.setStringProperty("cityCountry", cityCountry);

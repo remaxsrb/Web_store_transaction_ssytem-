@@ -33,7 +33,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Grad.findAll", query = "SELECT g FROM Grad g"),
     @NamedQuery(name = "Grad.findByIdGrad", query = "SELECT g FROM Grad g WHERE g.idGrad = :idGrad"),
     @NamedQuery(name = "Grad.findByNaziv", query = "SELECT g FROM Grad g WHERE g.naziv = :naziv"),
-    @NamedQuery(name = "Grad.findByDrzava", query = "SELECT g FROM Grad g WHERE g.drzava = :drzava")})
+    @NamedQuery(name = "Grad.findByDrzava", query = "SELECT g FROM Grad g WHERE g.drzava = :drzava"),
+    @NamedQuery(name = "Grad.findByNazivDrzava", query = "SELECT g FROM Grad g WHERE g.drzava = :drzava AND g.naziv= :naziv")})
 public class Grad implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -109,7 +109,6 @@ public class Subsystem1 {
     private TextMessage createCity(String cityName, String cityCountry) 
     {
         TextMessage textMessage = null;
-        System.out.println("subsystem1.Subsystem1.createCity()");
         try {
             
             Grad city = new Grad();
@@ -117,10 +116,10 @@ public class Subsystem1 {
             city.setDrzava(cityCountry);
         
         List<Grad> cities = em.createNamedQuery("Grad.findByNazivDrzava", Grad.class).
-                setParameter("naziv", cityName).
-                setParameter("drzava", cityCountry).getResultList();
+                setParameter("naziv", cityName).getResultList();
         
         Grad controlVar = (cities.isEmpty()? null : cities.get(0));
+        
         
         String responseText = "";
         int returnStatus=0;
@@ -186,14 +185,16 @@ public class Subsystem1 {
             try {
                 System.out.println("Podsistem1: Cekanje zahteva...");
                 
+                
                 TextMessage textMessage = (TextMessage) consumer.receive();
                 byte request = textMessage.getByteProperty("request");
-                
+
                 Message response = null;
                 
                 switch(request) {
                 
                     case CREATE_CITY:
+                        
                         cityName = textMessage.getStringProperty("cityName");
                         cityCountry = textMessage.getStringProperty("cityCountry");
                         response = createCity(cityName, cityCountry);
