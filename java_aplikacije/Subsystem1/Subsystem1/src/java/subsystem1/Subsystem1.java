@@ -45,10 +45,10 @@ public class Subsystem1 {
     @Resource(lookup = "myConnFactory")
     static ConnectionFactory connFactory;
     
-    @Resource(lookup="serverTopic")
+    @Resource(lookup="myTestTopic")
     static Topic topic;
     
-    @Resource(lookup="myQueue")
+    @Resource(lookup="myTestQueue")
     static Queue serverQueue;
     
     //kreirati po jednog proizvodjaca i jednog potrosaca za svaku vezu sa drugim podsistemom
@@ -109,15 +109,15 @@ public class Subsystem1 {
     private TextMessage createCity(String cityName, String cityCountry) 
     {
         TextMessage textMessage = null;
-        
+        System.out.println("subsystem1.Subsystem1.createCity()");
         try {
             
             Grad city = new Grad();
             city.setNaziv(cityName);
             city.setDrzava(cityCountry);
         
-        List<Grad> cities = em.createNamedQuery("Grad.findByGradDrzava", Grad.class).
-                setParameter("grad", cityName).
+        List<Grad> cities = em.createNamedQuery("Grad.findByNazivDrzava", Grad.class).
+                setParameter("naziv", cityName).
                 setParameter("drzava", cityCountry).getResultList();
         
         Grad controlVar = (cities.isEmpty()? null : cities.get(0));
@@ -205,6 +205,12 @@ public class Subsystem1 {
                     case ALL_USERS:
                         response = getUsers();
                         break;
+                    case CREATE_USER:
+                        break;
+                    case WIRE_MONEY_TO_USER:
+                        break;
+                    case CHANGE_USER_ADDRESS:
+                        break;    
                 }
                 
                 producer.send(serverQueue, response);

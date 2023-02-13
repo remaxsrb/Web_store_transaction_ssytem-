@@ -24,6 +24,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -41,15 +42,15 @@ public class City {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "serverTopic")
+    @Resource(lookup = "myTestTopic")
     Topic topic;
     
-    @Resource(lookup = "myQueue")
+    @Resource(lookup = "myTestQueue")
     Queue queue;
     
     @POST
-    @Path("addCity/{cityName}/{cityCountry}")
-    public Response createCity(@FormParam("cityName") String cityName,@FormParam("cityCountry") String cityCountry ) {
+    @Path("createCity/{cityName}/{cityCountry}")
+    public Response createCity(@PathParam("cityName") String cityName, @PathParam("cityCountry") String cityCountry ) {
         
         try {
             

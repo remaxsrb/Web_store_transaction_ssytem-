@@ -42,10 +42,10 @@ public class Users {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "serverTopic")
+    @Resource(lookup = "myTestTopic")
     Topic topic;
     
-    @Resource(lookup = "myQueue")
+    @Resource(lookup = "myTestQueue")
     Queue queue;
     
 //    @POST
@@ -98,14 +98,14 @@ public class Users {
         try {
             JMSContext context = connectionFactory.createContext();
             JMSProducer producer = context.createProducer();
-            JMSConsumer consumer = context.createConsumer(queue);
+            JMSConsumer consumer = context.createConsumer(topic);
             
             // message
             TextMessage msg = context.createTextMessage("request");
             msg.setByteProperty("request", ALL_USERS);
             msg.setIntProperty("podsistem", 1);
             
-            producer.send(topic, msg);
+            producer.send(queue, msg);
             
             // response
             Message mess = consumer.receive();

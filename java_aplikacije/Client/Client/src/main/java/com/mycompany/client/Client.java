@@ -202,33 +202,23 @@ public class Client {
         return getCharacterDataFromElement((Element) e.getElementsByTagName(field).item(0));
     }
     
-    private void createCity(String cityName, String countryName) 
+    private void createCity(String cityName, String cityCountry) 
     {
         String errMsg = "Greska pri povezivanju";
         
         try {
-            String URLAddress = "http://localhost:8080/Server/store/cities/addCity/cityName/countryName";
+            String URLAddress = "http://localhost:8080/Server/store/cities/createCity/" + cityName +"/" + cityCountry;
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
             
             try {
                 HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
-         
+                
                 myHttpConnection.setRequestMethod("POST");
                 myHttpConnection.setDoOutput(true);
-                
-                StringBuffer queryParameters = new StringBuffer();
                
-                queryParameters.append("cityName=");
-                queryParameters.append(cityName);
-                queryParameters.append("&");
-                queryParameters.append("cityCountry=");
-                queryParameters.append(countryName);
-                
-                OutputStream output = myHttpConnection.getOutputStream();
-                output.write(queryParameters.toString().getBytes());
-                output.flush();
                 
                 responseCode = myHttpConnection.getResponseCode();
                 
@@ -243,7 +233,7 @@ public class Client {
                 input.close();   
                 System.out.println("----------------------------------------------------------");
                 
-            } catch (IOException e) {e.printStackTrace();}
+            } catch (IOException e) {}
             
         } catch (MalformedURLException e) {System.out.println(errMsg);}
             
