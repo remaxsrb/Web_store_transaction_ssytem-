@@ -24,6 +24,7 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.validation.ConstraintViolationException;
 
 
 /**
@@ -74,7 +75,78 @@ public class Subsystem1 {
     JMSProducer producer;
     //==========================================================================
     
-    private TextMessage createUser() {return null;}
+    private TextMessage createUser(String userName, String firstName, String lastName, 
+            String password, String streetName, String streetNumber, String cityName, String cityCountry) 
+    {
+        TextMessage textMessage = null;
+        
+        try {
+            
+            Korisnik user = new Korisnik();
+            user.setKorisnickoIme(userName);
+            user.setIme(firstName);
+            user.setPrezime(lastName);
+            user.setSifra(password);     
+            user.setNovac(1000);
+            
+            
+        List<Grad> cities = em.createNamedQuery("Grad.findByNazivDrzava", Grad.class).
+                setParameter("naziv", cityName).
+                setParameter("drzava", cityCountry).
+                getResultList();
+        
+        Grad cityControlVar = (cities.isEmpty()? null : cities.get(0));
+        
+        List<Adresa> addressess = em.createNamedQuery("Adresa.findByUlicaBroj", Adresa.class).
+                setParameter("ulica", streetName).
+                setParameter("broj", Integer.parseInt(streetNumber)).
+                getResultList();
+        
+        Adresa addressControlVar = (addressess.isEmpty()? null : addressess.get(0));
+        
+        
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(cityControlVar == null) 
+        {
+            responseText = "Specified city is not in database";
+            returnStatus = -1;
+        }
+        else if (addressControlVar == null) 
+        {
+            responseText = "Specified adress is not in database";
+            returnStatus = -1;
+        }
+        else 
+        {
+            
+            user.setIdGrad(cityControlVar);
+            user.setIdAdresa(addressControlVar);
+            
+            
+            try {
+                    em.getTransaction().begin();
+                    em.persist(user);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {e.printStackTrace();}
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
     
     private TextMessage wireMoneyToUser() {return null;}
     
@@ -116,7 +188,9 @@ public class Subsystem1 {
             city.setDrzava(cityCountry);
         
         List<Grad> cities = em.createNamedQuery("Grad.findByNazivDrzava", Grad.class).
-                setParameter("naziv", cityName).getResultList();
+                setParameter("naziv", cityName).
+                setParameter("drzava", cityCountry).
+                getResultList();
         
         Grad controlVar = (cities.isEmpty()? null : cities.get(0));
         
@@ -156,7 +230,7 @@ public class Subsystem1 {
         return textMessage;
     }
     
-    
+
     private void subsystem2Listener(Message msg) {}
     
     private void subsystem3Listener(Message msg) {}
@@ -178,7 +252,8 @@ public class Subsystem1 {
 //        subsystem3_subsystem1_consumer = context.createConsumer(subsystem3_subsystem1_queue);
         
         
-        String cityName, cityCountry;
+        String cityName, cityCountry, username, userFirstName, userLastName,
+                streetName, streetNumber, userPassword;
         
         while (true) 
         {
@@ -207,6 +282,21 @@ public class Subsystem1 {
                         response = getUsers();
                         break;
                     case CREATE_USER:
+                        
+                        username = textMessage.getStringProperty("userName");
+                        userFirstName = textMessage.getStringProperty("firstName");
+                        userLastName = textMessage.getStringProperty("lastName");
+                        userPassword = textMessage.getStringProperty("password");
+                        streetName = textMessage.getStringProperty("street");
+                        streetNumber = textMessage.getStringProperty("streetNumber");
+                        cityName = textMessage.getStringProperty("cityName");
+                        cityCountry = textMessage.getStringProperty("cityCountry");
+      
+                        
+                        response=createUser(username, userFirstName, userLastName, 
+                                userPassword, streetName, streetNumber, cityName, cityCountry);
+                        
+                        
                         break;
                     case WIRE_MONEY_TO_USER:
                         break;

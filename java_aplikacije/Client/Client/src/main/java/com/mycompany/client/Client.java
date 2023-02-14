@@ -84,9 +84,9 @@ public class Client {
         System.out.println("---------------------------------------------------");
         
         String cityName, cityCountry, username, userFirstName, userLastName,
-                userStreet, categoryName, articleName;
+                userStreet, streetNumber, userPassword, categoryName, articleName;
         
-        int idKorisnik, idArtikal; 
+        int idKorisnik, idArtikal ; 
         
         while(true) 
         {
@@ -105,6 +105,33 @@ public class Client {
                     createCity(cityName, cityCountry);
                     break;
                 case CREATE_USER:
+                    System.out.println("Korisnicko ime: ");
+                    username = input.readLine();
+                    
+                    System.out.println("Ime: ");
+                    userFirstName = input.readLine();
+                    
+                    System.out.println("Prezime: ");
+                    userLastName = input.readLine();
+                    
+                    System.out.println("Sifra: ");
+                    userPassword = input.readLine();
+                    
+                    System.out.println("Ulica: ");
+                    userStreet = input.readLine();
+                    
+                    System.out.println("Broj: ");
+                    streetNumber = input.readLine();
+                    
+                    System.out.println("Grad: ");
+                    cityName = input.readLine();
+                    
+                    System.out.println("Drzava: ");
+                    cityCountry = input.readLine();
+                    
+                    
+                    createUser(username, userFirstName, userLastName,
+                            userPassword, userStreet, streetNumber ,cityName, cityCountry);
                     
                     break;
                 case WIRE_MONEY_TO_USER:
@@ -208,6 +235,47 @@ public class Client {
         
         try {
             String URLAddress = "http://localhost:8080/Server/store/cities/createCity/" + cityName +"/" + cityCountry;
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+            
+        
+    }
+    
+     private void createUser(String userName, String firstName, String lastName, String password, String street, String streetNumber, String cityName, String cityCountry) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/users/createUser/"
+                    + userName + "/" + firstName + "/"+ lastName + "/" + password 
+                    + "/" + street + "/" +streetNumber + "/" + cityName + "/" + cityCountry;
+            
             
             String inputString = null;
             int responseCode = 0;

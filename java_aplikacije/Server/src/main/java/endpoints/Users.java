@@ -25,6 +25,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -48,46 +49,55 @@ public class Users {
     @Resource(lookup = "myTestQueue")
     Queue queue;
     
-//    @POST
-//    @Path("addUser/{cityName}/{cityCountry}")
-//    public Response createCity(@FormParam("cityName") String cityName,@FormParam("cityCountry") String cityCountry ) {
-//        
-//        try {
-//            
-//            JMSContext context = connectionFactory.createContext();
-//            JMSProducer producer = context.createProducer();
-//            JMSConsumer consumer = context.createConsumer(queue);
-//            
-//            //create message
-//            
-//            TextMessage textMessage = context.createTextMessage("request");
-//            
-//            textMessage.setByteProperty("request", CREATE_USER);
-//            textMessage.setIntProperty("subsystem", 1);
-//            
-//            textMessage.setStringProperty("cityName", cityName);
-//            textMessage.setStringProperty("cityCountry", cityCountry);
-//            
-//            producer.send(topic, textMessage);
-//            
-//            //response
-//            
-//            Message message = consumer.receive();
-//            if (!(message instanceof TextMessage)){
-//                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
-//            }
-//            TextMessage recievedTextMessage = (TextMessage) message;
-//            String res = recievedTextMessage.getText();
-//            int ret = recievedTextMessage.getIntProperty("status");
-//            if (ret != 0) 
-//                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
-//            
-//        } catch (JMSException ex) {
-//            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    
-//    return Response.status(OK).entity("City successfuly created!").build();
-//    }
+    @POST
+    @Path("createUser/{userName}/{firstName}/{lastName}/{password}/{street}/{streetNumber}/{cityName}/{cityCountry}")
+    public Response createUser(@PathParam("userName") String userName,@PathParam("firstName") 
+            String firstName, @PathParam("lastName") String lastName, @PathParam("password") String password, 
+            @PathParam("street") String street, @PathParam("streetNumber") String streetNumber,
+            @PathParam("cityName") String cityName, @PathParam("cityCountry") String cityCountry) {
+        
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", CREATE_USER);
+            textMessage.setIntProperty("podsistem", 1);
+            
+            textMessage.setStringProperty("userName", userName);
+            textMessage.setStringProperty("firstName", firstName);
+            textMessage.setStringProperty("lastName", lastName);
+            textMessage.setStringProperty("password", password);
+            textMessage.setStringProperty("street", street);
+            textMessage.setStringProperty("streetNumber", streetNumber);
+            textMessage.setStringProperty("cityName", cityName);
+            textMessage.setStringProperty("cityCountry", cityCountry);
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return Response.status(OK).entity("User successfuly created!").build();
+    }
     
     @GET
     @Path("getusers")

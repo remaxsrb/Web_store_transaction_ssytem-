@@ -33,7 +33,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Adresa.findAll", query = "SELECT a FROM Adresa a"),
     @NamedQuery(name = "Adresa.findByIdAdresa", query = "SELECT a FROM Adresa a WHERE a.idAdresa = :idAdresa"),
     @NamedQuery(name = "Adresa.findByUlica", query = "SELECT a FROM Adresa a WHERE a.ulica = :ulica"),
-    @NamedQuery(name = "Adresa.findByBroj", query = "SELECT a FROM Adresa a WHERE a.broj = :broj")})
+    @NamedQuery(name = "Adresa.findByBroj", query = "SELECT a FROM Adresa a WHERE a.broj = :broj"),
+    @NamedQuery(name = "Adresa.findByUlicaBroj", query = "SELECT a FROM Adresa a WHERE a.broj = :broj AND a.ulica = :ulica")})
 public class Adresa implements Serializable {
 
     private static final long serialVersionUID = 1L;

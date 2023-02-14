@@ -56,7 +56,7 @@ CREATE TABLE `Grad` (
   `Drzava` varchar(45) NOT NULL,
   PRIMARY KEY (`idGrad`),
   UNIQUE KEY `idGrad_UNIQUE` (`idGrad`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -65,7 +65,7 @@ CREATE TABLE `Grad` (
 
 LOCK TABLES `Grad` WRITE;
 /*!40000 ALTER TABLE `Grad` DISABLE KEYS */;
-INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Prizren','Srbija'),(4,'Nis','Srbija');
+INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Prizren','Srbija'),(4,'Nis','Srbija'),(6,'Cacak','Srbija');
 /*!40000 ALTER TABLE `Grad` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -112,4 +112,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-06 17:43:46
+-- Dump completed on 2023-02-14  1:50:34
