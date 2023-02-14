@@ -67,10 +67,10 @@ public class Client {
         System.out.println("\t4.  Promena adrese korisnika"); //subsystem1 - DONE
         
         System.out.println("\t5.  Kreiranje kategorije"); //subsystem2 - DONE
-        System.out.println("\t6.  Kreiranje artikla"); //subsystem2
-        System.out.println("\t7.  Menjanje cene artikla"); //subsystem2
-        System.out.println("\t8.  Postavljanje popusta za artikal"); //subsystem2
-        System.out.println("\t9.  Dodavanje artikla u odredjenoj kolicini u korpu"); //subsystem2
+        System.out.println("\t6.  Kreiranje artikla"); //subsystem2 - DONE
+        System.out.println("\t7.  Menjanje cene artikla"); //subsystem2 - DONE
+        System.out.println("\t8.  Postavljanje popusta za artikal"); //subsystem2 - DONE
+        System.out.println("\t9.  Dodavanje artikla u odredjenoj kolicini u korpu"); //subsystem2 
         System.out.println("\t10. Brisanje artikla u odredjenoj kolicni iz korpe"); //subsystem2
         
         System.out.println("\t11. Plaćanje, koje obuhvata kreiranje transakcije, "
@@ -91,7 +91,8 @@ public class Client {
         
         String cityName, cityCountry, username, userFirstName, userLastName,
                 userStreet, streetNumber, userPassword,
-                money, categoryName, superCategoryName ,articleName, articlePrice, articleDescription;
+                money, categoryName, superCategoryName ,articleName, articlePrice, articleDescription,
+                articleDiscount;
         
         while(true) 
         {
@@ -193,9 +194,23 @@ public class Client {
                     
                     break;
                 case MODIFY_ARTICLE_PRICE:
+                    System.out.println("Naziv artikla: ");
+                    articleName = input.readLine();
+                    
+                    System.out.println("Nova cena artikla: ");
+                    articlePrice = input.readLine();
+                    
+                    changeArticlePrice(articleName, articlePrice);
                     
                     break;
                 case ADD_ARTICLE_DISCOUNT:
+                    System.out.println("Naziv artikla: ");
+                    articleName = input.readLine();
+                    
+                    System.out.println("Popust za artikal: ");
+                    articleDiscount = input.readLine();
+                    
+                    setArticleDiscount(articleName, articleDiscount);
                     
                     break;
                 case ADD_TO_CART:
@@ -671,4 +686,80 @@ public class Client {
             
         } catch (MalformedURLException e) {System.out.println(errMsg);}
     }
+    
+    
+    private void changeArticlePrice(String articleName, String newPrice) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/articles/changeArticlePrice/" 
+                    + articleName + "/" + newPrice;
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
+    private void setArticleDiscount(String articleName, String discount) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/articles/setArticleDiscount/" 
+                    + articleName + "/" + discount;
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
 }

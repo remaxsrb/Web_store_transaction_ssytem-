@@ -52,7 +52,7 @@ public class Subsystem2 {
     @Resource(lookup="serverTestTopic")
     static Topic topic;
     
-    @Resource(lookup="serverTestQueue")
+    @Resource(lookup="kupjenas")
     static Queue serverQueue;
     
     
@@ -210,6 +210,100 @@ public class Subsystem2 {
         return textMessage;
     }
     
+    private TextMessage setArticleDiscount(String articleName, int discount) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+        List<Artikal> articles = em.createNamedQuery("Artikal.findByNaziv", Artikal.class).
+                setParameter("naziv", articleName).
+                getResultList();
+        
+        Artikal article = (articles.isEmpty()? null : articles.get(0));
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(article==null) 
+        {
+            responseText = "Article is not in database";
+            returnStatus = -1;
+        }
+       
+        else 
+        {
+            
+            article.setPopust(discount);
+            try {
+                    em.getTransaction().begin();
+                    em.persist(article);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) { e.printStackTrace();
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
+    
+    private TextMessage setArticlePrice(String articleName, float newPrice) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+        List<Artikal> articles = em.createNamedQuery("Artikal.findByNaziv", Artikal.class).
+                setParameter("naziv", articleName).
+                getResultList();
+        
+        Artikal article = (articles.isEmpty()? null : articles.get(0));
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(article==null) 
+        {
+            responseText = "Article is not in database";
+            returnStatus = -1;
+        }
+       
+        else 
+        {
+            
+            article.setCena(newPrice);
+            try {
+                    em.getTransaction().begin();
+                    em.persist(article);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) { e.printStackTrace();
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
+    
     private void run() 
     {
         String msgSelector = "podsistem=2";
@@ -219,7 +313,7 @@ public class Subsystem2 {
         consumer = context.createDurableConsumer(topic, "sub2", msgSelector, false);
         producer = context.createProducer();
         
-        String categoryName, superCategoryName, articleName, articlePrice, articleDescription, articleCategory; 
+        String categoryName, superCategoryName, articleName, articlePrice, articleDescription, articleCategory, articleDiscount; 
         
         while (true) 
         {
@@ -250,10 +344,19 @@ public class Subsystem2 {
                         
                         break;
                     case MODIFY_ARTICLE_PRICE:
-                       
+                        
+                        articleName = textMessage.getStringProperty("articleName");
+                        articlePrice = textMessage.getStringProperty("newPrice");
+                        
+                        response = setArticlePrice(articleName, Float.parseFloat(articlePrice));
+                        
                         break;
                     case ADD_ARTICLE_DISCOUNT:
-                       
+                        articleName = textMessage.getStringProperty("articleName");
+                        articleDiscount = textMessage.getStringProperty("discount");
+                        
+                        response = setArticleDiscount(articleName, Integer.parseInt(articleDiscount));
+                        
                         break;
                     case ADD_TO_CART:
                        

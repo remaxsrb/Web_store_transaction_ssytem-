@@ -47,7 +47,7 @@ public class Article {
     @Resource(lookup = "serverTestTopic")
     Topic topic;
     
-    @Resource(lookup = "serverTestQueue")
+    @Resource(lookup = "kupjenas")
     Queue queue;
     
     @POST
@@ -98,6 +98,89 @@ public class Article {
     }
 
     
-   
+    @POST
+    @Path("changeArticlePrice/{articleName}/{newPrice}")
+    public Response changeArticlePrice(@PathParam("articleName") String articleName, 
+            @PathParam("newPrice") String newPrice) {
+        
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", MODIFY_ARTICLE_PRICE);
+            textMessage.setIntProperty("podsistem", 2);
+            
+            textMessage.setStringProperty("articleName", articleName);
+            textMessage.setStringProperty("newPrice", newPrice);
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
     
+    return Response.status(OK).entity("Article price successfuly changed!").build();
+    }
+    
+    @POST
+    @Path("setArticleDiscount/{articleName}/{discount}")
+    public Response setArticleDiscount(@PathParam("articleName") String articleName, 
+            @PathParam("discount") String discount) {
+        
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", ADD_ARTICLE_DISCOUNT);
+            textMessage.setIntProperty("podsistem", 2);
+            
+            textMessage.setStringProperty("articleName", articleName);
+            textMessage.setStringProperty("discount", discount);
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return Response.status(OK).entity("Article discount successfuly set!").build();
+    }
 }
