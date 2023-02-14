@@ -38,12 +38,14 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class Users {
     
     private static final byte CREATE_USER = 2;
+    private static final byte WIRE_MONEY_TO_USER = 3;
+    private static final byte CHANGE_USER_ADDRESS = 4;
     private static final byte ALL_USERS = 13;
     
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "myTestTopic")
+    @Resource(lookup = "serverTestTopic")
     Topic topic;
     
     @Resource(lookup = "myTestQueue")
@@ -133,5 +135,46 @@ public class Users {
         
         return Response.status(OK).entity(new GenericEntity<List<Korisnik>>(users){}).build();
     }
-       
+    
+    @POST
+    @Path("wireMoneyToUser/{userName}/{money}")
+    public Response wireMoneyToUser(@PathParam("userName") String userName, @PathParam("money") String money) 
+    {
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", WIRE_MONEY_TO_USER);
+            textMessage.setIntProperty("podsistem", 1);
+            
+            textMessage.setStringProperty("userName", userName);
+            textMessage.setStringProperty("money", money);
+            
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return Response.status(OK).entity("Money successfuly wired!").build();
+    }
 }

@@ -46,7 +46,7 @@ public class Subsystem1 {
     @Resource(lookup = "myConnFactory")
     static ConnectionFactory connFactory;
     
-    @Resource(lookup="myTestTopic")
+    @Resource(lookup="serverTestTopic")
     static Topic topic;
     
     @Resource(lookup="myTestQueue")
@@ -148,7 +148,54 @@ public class Subsystem1 {
         return textMessage;
     }
     
-    private TextMessage wireMoneyToUser() {return null;}
+    private TextMessage wireMoneyToUser(String username, float funds) 
+    {
+         TextMessage textMessage = null;
+        try {
+            
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList();
+        
+        Korisnik user = (users.isEmpty()? null : users.get(0));
+        
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(user==null) 
+        {
+            responseText = "User does not exist";
+            returnStatus = -1;
+        }
+        else 
+        {
+            user.setNovac(funds+user.getNovac());
+            
+            try {
+                    em.getTransaction().begin();
+                    em.persist(user);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {
+                    e.printStackTrace();
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
     
     private TextMessage updateUserAddressAndCity() {return null;}
     
@@ -253,7 +300,7 @@ public class Subsystem1 {
         
         
         String cityName, cityCountry, username, userFirstName, userLastName,
-                streetName, streetNumber, userPassword;
+                streetName, streetNumber, userPassword, money;
         
         while (true) 
         {
@@ -299,6 +346,18 @@ public class Subsystem1 {
                         
                         break;
                     case WIRE_MONEY_TO_USER:
+                        
+                        System.out.println("CASE: WIRE_MONEY_TO_USER");
+                        
+                        
+                        username = textMessage.getStringProperty("userName");
+                        money = textMessage.getStringProperty("money");
+                        
+                        System.out.println(username);
+                        System.out.println(money);
+                        
+                        response=wireMoneyToUser(username, Float.parseFloat(money));
+                        
                         break;
                     case CHANGE_USER_ADDRESS:
                         break;    

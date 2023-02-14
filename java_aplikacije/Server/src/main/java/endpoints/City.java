@@ -42,7 +42,7 @@ public class City {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "myTestTopic")
+    @Resource(lookup = "serverTestTopic")
     Topic topic;
     
     @Resource(lookup = "myTestQueue")

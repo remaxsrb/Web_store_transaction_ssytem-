@@ -84,9 +84,8 @@ public class Client {
         System.out.println("---------------------------------------------------");
         
         String cityName, cityCountry, username, userFirstName, userLastName,
-                userStreet, streetNumber, userPassword, categoryName, articleName;
-        
-        int idKorisnik, idArtikal ; 
+                userStreet, streetNumber, userPassword,
+                money, categoryName, articleName;
         
         while(true) 
         {
@@ -135,6 +134,14 @@ public class Client {
                     
                     break;
                 case WIRE_MONEY_TO_USER:
+                    
+                    System.out.println("Korisnicko ime: ");
+                    username = input.readLine();
+                    
+                    System.out.println("Iznos novca za dodavanje na racun: ");
+                    money = input.readLine();
+                    
+                    wireMoneyToUser(username, money);
                     
                     break;
                 case CHANGE_USER_ADDRESS:
@@ -425,4 +432,41 @@ public class Client {
             
         } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
+    
+    private void wireMoneyToUser(String userName, String money) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/users/wireMoneyToUser/" + userName + "/" + money;
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
 }
