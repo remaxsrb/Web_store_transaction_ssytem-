@@ -61,22 +61,27 @@ public class Client {
         byte userInput;
          
         System.out.println("--------------------[ OPCIJE ]---------------------");
-        System.out.println("\t1.  Kreiranje grada");
-        System.out.println("\t2.  Kreiranje korisnika");
-        System.out.println("\t3.  Dodavanje novca korisniku");
-        System.out.println("\t4.  Promena adrese korisnika");
-        System.out.println("\t5.  Kreiranje kategorije");
-        System.out.println("\t6.  Kreiranje artikla");
-        System.out.println("\t7.  Menjanje cene artikla");
-        System.out.println("\t8.  Postavljanje popusta za artikal");
-        System.out.println("\t9.  Dodavanje artikla u odredjenoj kolicini u korpu");
-        System.out.println("\t10. Brisanje artikla u odredjenoj kolicni iz korpe");
+        System.out.println("\t1.  Kreiranje grada"); //subsystem1 - DONE
+        System.out.println("\t2.  Kreiranje korisnika"); //subsystem1 - DONE
+        System.out.println("\t3.  Dodavanje novca korisniku"); //subsystem1 - DONE
+        System.out.println("\t4.  Promena adrese korisnika"); //subsystem1 - DONE
+        
+        System.out.println("\t5.  Kreiranje kategorije"); //subsystem2
+        System.out.println("\t6.  Kreiranje artikla"); //subsystem2
+        System.out.println("\t7.  Menjanje cene artikla"); //subsystem2
+        System.out.println("\t8.  Postavljanje popusta za artikal"); //subsystem2
+        System.out.println("\t9.  Dodavanje artikla u odredjenoj kolicini u korpu"); //subsystem2
+        System.out.println("\t10. Brisanje artikla u odredjenoj kolicni iz korpe"); //subsystem2
+        
         System.out.println("\t11. Plaćanje, koje obuhvata kreiranje transakcije, kreiranje narudžbine sa njenim stavkama, i brisanje sadržaja iz korpe");
-        System.out.println("\t12. Dohvatanje svih gradova");
-        System.out.println("\t13. Dohvatanje svih korisnika");
-        System.out.println("\t14. Dohvatanje svih kategorija");
-        System.out.println("\t15. Dohvatanje svih artikala koje prodaje korisnik koji je poslao zahtev");
-        System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahtev");
+        
+        System.out.println("\t12. Dohvatanje svih gradova"); //subsystem1 - DONE
+        System.out.println("\t13. Dohvatanje svih korisnika"); //subsystem1 - DONE
+        
+        System.out.println("\t14. Dohvatanje svih kategorija"); //subsystem2
+        System.out.println("\t15. Dohvatanje svih artikala koje prodaje korisnik koji je poslao zahtev"); //subsystem2
+        System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahtev"); //subsystem2
+        
         System.out.println("\t17. Dohvatanje svih narudžbina korisnika koji je poslao zahtev");
         System.out.println("\t18. Dohvatanje svih narudžbina");
         System.out.println("\t19. Dohvatanje svih transakcija");
@@ -85,7 +90,7 @@ public class Client {
         
         String cityName, cityCountry, username, userFirstName, userLastName,
                 userStreet, streetNumber, userPassword,
-                money, categoryName, articleName;
+                money, categoryName, superCategoryName ,articleName;
         
         while(true) 
         {
@@ -160,6 +165,14 @@ public class Client {
                     break;
                 case CREATE_CATEGORY:
                     
+                    System.out.println("Ime kategorije: ");
+                    categoryName = input.readLine();
+                    
+                    System.out.println("Ime nadkategorije (ako kategorija koja se kreira nije potkategorija neke druge pritisnuti x): ");
+                    superCategoryName = input.readLine();
+                    
+                    createCategory(categoryName, superCategoryName);
+                    
                     break;
                 case CREATE_ARTICLE:
                     
@@ -186,7 +199,7 @@ public class Client {
                     getUsers();
                     break;
                 case ALL_CATEGORIES:
-                    
+                    getCategories();
                     break;
                 case ALL_ARTICLES_USER_IS_SELLING:
                     
@@ -514,5 +527,96 @@ public class Client {
             } catch (IOException e) {}
             
         } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
+    private void createCategory(String categoryName, String superCategoryName) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/categories/createCategory/" + categoryName + "/" + superCategoryName;
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
+    
+    private void getCategories() 
+    {
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/categories/getCategories";
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = in.readLine()) != null) {
+                  
+			try {
+                            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			    DocumentBuilder db = dbf.newDocumentBuilder();
+			    InputSource is = new InputSource();
+			    is.setCharacterStream(new StringReader(inputString));
+
+			    Document doc = db.parse(is);
+			    NodeList nodes = doc.getElementsByTagName("kategorija");
+
+		            // iterate city elements
+                            for (int i = 0; i < nodes.getLength(); i++) {
+				Element element = (Element) nodes.item(i);
+                                
+                                String nazivKategorije = getCharacterDataFromElement((Element) element.getElementsByTagName("naziv").item(0));
+                                
+                           
+                                System.out.println("NazivKategorije: " + nazivKategorije);
+                                
+			    }
+			} catch (Exception e) { e.printStackTrace(); }   
+		}
+		in.close();   
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
 }

@@ -49,7 +49,7 @@ public class Subsystem1 {
     @Resource(lookup="serverTestTopic")
     static Topic topic;
     
-    @Resource(lookup="myTestQueue")
+    @Resource(lookup="serverTestQueue")
     static Queue serverQueue;
     
     //kreirati po jednog proizvodjaca i jednog potrosaca za svaku vezu sa drugim podsistemom

@@ -48,7 +48,7 @@ public class Users {
     @Resource(lookup = "serverTestTopic")
     Topic topic;
     
-    @Resource(lookup = "myTestQueue")
+    @Resource(lookup = "serverTestQueue")
     Queue queue;
     
     @POST

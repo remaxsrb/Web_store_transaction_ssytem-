@@ -4,7 +4,7 @@
  */
 package endpoints;
 
-import entities.Grad;
+import entities.Kategorija;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -33,11 +33,12 @@ import static javax.ws.rs.core.Response.Status.OK;
  *
  * @author remax
  */
-@Path("cities")
-public class City {
+@Path("categories")
+public class Category {
     
-    private static final byte CREATE_CITY = 1;
-    private static final byte ALL_CITIES = 12;
+    private static final byte CREATE_CATEGORY = 5;
+    private static final byte ALL_CATEGORIES = 14;
+
     
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
@@ -49,8 +50,8 @@ public class City {
     Queue queue;
     
     @POST
-    @Path("createCity/{cityName}/{cityCountry}")
-    public Response createCity(@PathParam("cityName") String cityName, @PathParam("cityCountry") String cityCountry ) {
+    @Path("createCategory/{categoryName}/{superCategoryName}")
+    public Response createCategory(@PathParam("categoryName") String categoryName, @PathParam("superCategoryName") String superCategoryName ) {
         
         try {
             
@@ -62,17 +63,18 @@ public class City {
             
             TextMessage textMessage = context.createTextMessage("request");
             
-            textMessage.setByteProperty("request", CREATE_CITY);
-            textMessage.setIntProperty("podsistem", 1);
+            textMessage.setByteProperty("request", CREATE_CATEGORY);
+            textMessage.setIntProperty("podsistem", 2);
             
-            textMessage.setStringProperty("cityName", cityName);
-            textMessage.setStringProperty("cityCountry", cityCountry);
+            textMessage.setStringProperty("categoryName", categoryName);
+            textMessage.setStringProperty("superCategoryName", superCategoryName);
             
             producer.send(topic, textMessage);
             
             //response
             
             Message message = consumer.receive();
+            
             if (!(message instanceof TextMessage)){
                 return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
             }
@@ -86,14 +88,15 @@ public class City {
             Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
         }
     
-    return Response.status(OK).entity("City successfuly created!").build();
+    return Response.status(OK).entity("Category successfuly created!").build();
     }
+
     
     @GET
-    @Path("getcities")
-    public Response getCities() {
+    @Path("getCategories")
+    public Response getCategories() {
     
-    ArrayList<Grad> cities = null;
+    ArrayList<Kategorija> categories = null;
         
         try {
             JMSContext context = connectionFactory.createContext();
@@ -102,8 +105,8 @@ public class City {
             
             // message
             TextMessage msg = context.createTextMessage("request");
-            msg.setByteProperty("request", ALL_CITIES);
-            msg.setIntProperty("podsistem", 1);
+            msg.setByteProperty("request", ALL_CATEGORIES);
+            msg.setIntProperty("podsistem", 2);
             
             producer.send(topic, msg);
             
@@ -113,15 +116,15 @@ public class City {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
             }
             ObjectMessage objMsg = (ObjectMessage) mess;
-            cities = (ArrayList<Grad>) objMsg.getObject();
+            categories = (ArrayList<Kategorija>) objMsg.getObject();
             
         } catch (JMSException ex) {
-            Logger.getLogger(Grad.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Kategorija.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassCastException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip objekta!").build();
         }
         
-        return Response.status(OK).entity(new GenericEntity<List<Grad>>(cities){}).build();
+        return Response.status(OK).entity(new GenericEntity<List<Kategorija>>(categories){}).build();
     }
-       
+    
 }
