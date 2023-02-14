@@ -142,6 +142,74 @@ public class Subsystem2 {
         
     }
     
+    private TextMessage createArticle(String articleName, float articlePrice, String articleDescription, String articleCategory) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+            Artikal article = new Artikal();
+            article.setNaziv(articleName);
+            article.setCena(articlePrice);
+           
+        
+        List<Artikal> articles = em.createNamedQuery("Artikal.findByNaziv", Artikal.class).
+                setParameter("naziv", articleName).
+                getResultList();
+        
+        Artikal articleControlVar = (articles.isEmpty()? null : articles.get(0));
+        
+        List<Kategorija> categories = em.createNamedQuery("Kategorija.findByNaziv", Kategorija.class).
+                setParameter("naziv", articleCategory).
+                getResultList();
+        
+        Kategorija categoryControlVar = (categories.isEmpty()? null : categories.get(0));
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(articleControlVar!=null) 
+        {
+            responseText = "Article is already in databse";
+            returnStatus = -1;
+        }
+        else if (categoryControlVar==null) 
+        {
+            responseText = "Category is not in databse";
+            returnStatus = -1;
+        }
+        else 
+        {
+            
+            if(!articleDescription.equals("x")) 
+            {
+                article.setOpis(articleDescription);
+            }
+            article.setKategorija(categoryControlVar);
+            try {
+                    em.getTransaction().begin();
+                    em.persist(article);
+                    em.getTransaction().commit();
+            } catch (EntityExistsException e) {
+            responseText = "Article is already in database";
+            returnStatus = -1;
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
+    
     private void run() 
     {
         String msgSelector = "podsistem=2";
@@ -151,7 +219,7 @@ public class Subsystem2 {
         consumer = context.createDurableConsumer(topic, "sub2", msgSelector, false);
         producer = context.createProducer();
         
-        String categoryName, superCategoryName;
+        String categoryName, superCategoryName, articleName, articlePrice, articleDescription, articleCategory; 
         
         while (true) 
         {
@@ -173,7 +241,13 @@ public class Subsystem2 {
                         break;
                         
                     case CREATE_ARTICLE:
-                      
+                        articleName = textMessage.getStringProperty("articleName");
+                        articlePrice = textMessage.getStringProperty("articlePrice");
+                        articleDescription = textMessage.getStringProperty("articleDescription");
+                        articleCategory = textMessage.getStringProperty("articleCategory");
+                        
+                        response = createArticle(articleName, Float.parseFloat(articlePrice), articleDescription, articleCategory);
+                        
                         break;
                     case MODIFY_ARTICLE_PRICE:
                        

@@ -4,10 +4,100 @@
  */
 package endpoints;
 
+import entities.Kategorija;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Resource;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.JMSProducer;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.OK;
+
 /**
  *
  * @author remax
  */
+@Path("articles")
 public class Article {
+    
+    private static final byte CREATE_ARTICLE = 6;
+    private static final byte MODIFY_ARTICLE_PRICE = 7;
+    private static final byte ADD_ARTICLE_DISCOUNT = 8;
+    private static final byte ALL_ARTICLES_USER_IS_SELLING = 15;
+    
+    @Resource(lookup = "myConnFactory")
+    ConnectionFactory connectionFactory;
+    
+    @Resource(lookup = "serverTestTopic")
+    Topic topic;
+    
+    @Resource(lookup = "serverTestQueue")
+    Queue queue;
+    
+    @POST
+    @Path("createArticle/{articleName}/{articlePrice}/{articleDescription}/{articleCategory}")
+    public Response createArticle(@PathParam("articleName") String articleName, 
+            @PathParam("articlePrice") String articlePrice, 
+            @PathParam("articleDescription") String articleDescription, 
+            @PathParam("articleCategory") String articleCategory ) {
+        
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", CREATE_ARTICLE);
+            textMessage.setIntProperty("podsistem", 2);
+            
+            textMessage.setStringProperty("articleName", articleName);
+            textMessage.setStringProperty("articlePrice", articlePrice);
+            textMessage.setStringProperty("articleDescription", articleDescription);
+            textMessage.setStringProperty("articleCategory", articleCategory);
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return Response.status(OK).entity("Article successfuly created!").build();
+    }
+
+    
+   
     
 }

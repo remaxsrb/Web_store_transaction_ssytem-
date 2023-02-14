@@ -6,5 +6,6 @@
     <class>entities.Adresa</class>
     <class>entities.Korisnik</class>
     <class>entities.Kategorija</class>
+    <class>entities.Artikal</class>
   </persistence-unit>
 </persistence>
