@@ -177,4 +177,50 @@ public class Users {
     
     return Response.status(OK).entity("Money successfuly wired!").build();
     }
+    
+    
+    @POST
+    @Path("changeUserAddress/{userName}/{street}/{streetNumber}")
+    public Response changeUserAddress(@PathParam("userName") String userName, 
+            @PathParam("street") String street,  @PathParam("streetNumber") String streetNumber) 
+    {
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", CHANGE_USER_ADDRESS);
+            textMessage.setIntProperty("podsistem", 1);
+            
+            textMessage.setStringProperty("userName", userName);
+            textMessage.setStringProperty("street", street);
+            textMessage.setStringProperty("streetNumber", streetNumber);
+            
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return Response.status(OK).entity("Address successfuly changed!").build();
+    }
+    
 }

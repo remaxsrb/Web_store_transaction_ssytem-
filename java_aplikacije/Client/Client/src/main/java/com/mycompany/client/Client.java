@@ -64,7 +64,7 @@ public class Client {
         System.out.println("\t1.  Kreiranje grada");
         System.out.println("\t2.  Kreiranje korisnika");
         System.out.println("\t3.  Dodavanje novca korisniku");
-        System.out.println("\t4.  Promena adrese i grada za korisnika");
+        System.out.println("\t4.  Promena adrese korisnika");
         System.out.println("\t5.  Kreiranje kategorije");
         System.out.println("\t6.  Kreiranje artikla");
         System.out.println("\t7.  Menjanje cene artikla");
@@ -145,6 +145,17 @@ public class Client {
                     
                     break;
                 case CHANGE_USER_ADDRESS:
+                    
+                    System.out.println("Korisnicko ime: ");
+                    username = input.readLine();
+                    
+                    System.out.println("Ulica: ");
+                    userStreet = input.readLine();
+                    
+                    System.out.println("Broj: ");
+                    streetNumber = input.readLine();
+                    
+                    changeUserAddress(username, userStreet, streetNumber);
                     
                     break;
                 case CREATE_CATEGORY:
@@ -469,4 +480,39 @@ public class Client {
         } catch (MalformedURLException e) {System.out.println(errMsg);}
     }
     
+    private void changeUserAddress(String userName, String street, String streetNumber) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/users/changeUserAddress/" + userName + "/" + street + "/" +streetNumber;
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
 }

@@ -197,7 +197,66 @@ public class Subsystem1 {
         return textMessage;
     }
     
-    private TextMessage updateUserAddressAndCity() {return null;}
+    private TextMessage updateUserAddress(String userName, String street, int streetNumber) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", userName).
+                getResultList();
+        
+        Korisnik user = (users.isEmpty()? null : users.get(0));
+        
+        List<Adresa> addressess = em.createNamedQuery("Adresa.findByUlicaBroj", Adresa.class).
+                setParameter("ulica", street).
+                setParameter("broj", streetNumber).
+                getResultList();
+        
+        Adresa address = (addressess.isEmpty()? null : addressess.get(0));
+        
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(user==null) 
+        {
+            responseText = "User does not exist";
+            returnStatus = -1;
+        }
+        else if (address==null) 
+        {
+            responseText = "Address does not exist in database";
+            returnStatus = -1;
+        }
+        else 
+        {
+            user.setIdAdresa(address);
+     
+            try {
+                    em.getTransaction().begin();
+                    em.persist(user);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {
+                    e.printStackTrace();
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
     
     private ObjectMessage getCities() {
         
@@ -347,19 +406,19 @@ public class Subsystem1 {
                         break;
                     case WIRE_MONEY_TO_USER:
                         
-                        System.out.println("CASE: WIRE_MONEY_TO_USER");
-                        
-                        
                         username = textMessage.getStringProperty("userName");
                         money = textMessage.getStringProperty("money");
-                        
-                        System.out.println(username);
-                        System.out.println(money);
-                        
+                      
                         response=wireMoneyToUser(username, Float.parseFloat(money));
                         
                         break;
                     case CHANGE_USER_ADDRESS:
+                        username = textMessage.getStringProperty("userName");
+                        streetName = textMessage.getStringProperty("street");
+                        streetNumber = textMessage.getStringProperty("streetNumber");
+                        
+                        response = updateUserAddress(username, streetName, Integer.parseInt(streetNumber));
+                        
                         break;    
                 }
                 
