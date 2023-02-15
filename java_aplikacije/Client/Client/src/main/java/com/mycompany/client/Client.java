@@ -69,7 +69,7 @@ public class Client {
         System.out.println("\t13. Dohvatanje svih korisnika"); //subsystem1 - DONE
         
         System.out.println("\t14. Dohvatanje svih kategorija"); //subsystem2 - DONE
-        System.out.println("\t15. Dohvatanje svih artikala koje prodaje korisnik koji je poslao zahtev"); //subsystem2
+        System.out.println("\t15. Dohvatanje svih artikala koje prodaje korisnik koji je poslao zahtev"); //subsystem2 - DONE
         System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahtev"); //subsystem2
         
         System.out.println("\t17. Dohvatanje svih narudžbina korisnika koji je poslao zahtev"); //subsystem3
@@ -226,6 +226,9 @@ public class Client {
                     break;
                 case ALL_ARTICLES_USER_IS_SELLING:
                     
+                    System.out.println("Korisnicko ime korisnika: ");
+                    username = input.readLine();
+                    getUserArticles(username);
                     break;
                 
                 case VIEW_CART:
@@ -708,6 +711,48 @@ public class Client {
             } catch (IOException e) {}
             
         } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
+    private void getUserArticles(String username) 
+    {
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/articles/getUserArticles/" + username;
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] articles = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
+
+                System.out.println("Artikli: ");
+               
+                for (String article : articles) 
+                {     
+                    
+                    System.out.println(article); 
+                }
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
     
 }

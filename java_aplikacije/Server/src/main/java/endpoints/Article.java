@@ -185,4 +185,41 @@ public class Article {
     
     return Response.status(OK).entity("Article discount successfuly set!").build();
     }
+    
+    @GET
+    @Path("getUserArticles/{username}")
+    public Response getUserArticles(@PathParam("username") String username) {
+    
+    ArrayList<String> articles = null;
+        
+        try {
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            // message
+            TextMessage textMessage = context.createTextMessage("request");
+            textMessage.setByteProperty("request", ALL_ARTICLES_USER_IS_SELLING);
+            textMessage.setIntProperty("podsistem", 2);
+            
+            textMessage.setStringProperty("username", username);
+            
+            producer.send(topic, textMessage);
+            
+            // response
+            Message mess = consumer.receive();
+            if (!(mess instanceof ObjectMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            ObjectMessage objMsg = (ObjectMessage) mess;
+            articles = (ArrayList<String>) objMsg.getObject();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(String.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassCastException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip objekta!").build();
+        }
+        
+        return Response.status(OK).entity(new GenericEntity<List<String>>(articles){}).build();
+    }
 }

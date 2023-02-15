@@ -316,6 +316,21 @@ public class Subsystem2 {
         return textMessage;
     }
     
+    private ObjectMessage getArticlesForOwner(String username) {
+        
+        List<Artikal> articles = em.createNamedQuery("Artikal.findByProdavac", Artikal.class).
+                setParameter("korisnickoIme", username).
+                getResultList();
+        
+        ArrayList<String> articlesString = new ArrayList<>();
+        
+        for (Artikal article : articles) 
+            articlesString.add(article.getNaziv());
+        
+        return context.createObjectMessage(articlesString);
+        
+    }
+    
     private void run() 
     {
         String msgSelector = "podsistem=2";
@@ -381,7 +396,8 @@ public class Subsystem2 {
                        response = getCategories();
                         break;
                     case ALL_ARTICLES_USER_IS_SELLING:
-                       
+                        articleOwner = textMessage.getStringProperty("username");
+                        response = getArticlesForOwner(articleOwner);
                         break;
                     case VIEW_CART:
                        
