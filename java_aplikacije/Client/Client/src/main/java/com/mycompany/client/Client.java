@@ -78,10 +78,13 @@ public class Client {
         System.out.println("\t0.  Kraj rada");
         System.out.println("---------------------------------------------------");
         
+        //U pocetku sve podatke citam i prenosim kao stringove pa tek u zasebnim 
+        //podsistemima pretvaram u int ili float ako je to potrebno
+        
         String cityName, cityCountry, username, userFirstName, userLastName,
                 userStreet, streetNumber, userPassword,
                 money, categoryName, superCategoryName ,articleName, articlePrice, articleDescription,
-                articleDiscount;
+                articleDiscount, articleAmmount;
         
         while(true) 
         {
@@ -208,6 +211,17 @@ public class Client {
                     break;
                 case ADD_TO_CART:
                     
+                    System.out.println("Korisnicko ime: ");
+                    username = input.readLine();
+                    
+                    System.out.println("Naziv artikla: ");
+                    articleName = input.readLine();
+                    
+                    System.out.println("Kolicina artikla: ");
+                    articleAmmount = input.readLine();
+                    
+                    addToCart(articleName, articleAmmount, username); 
+                    
                     break;
                 case REMOVE_FROM_CART:
                     
@@ -288,6 +302,8 @@ public class Client {
         try {
             String URLAddress = "http://localhost:8080/Server/store/cities/createCity/" + cityName +"/" + cityCountry;
             
+            URLAddress = URLAddress.replace(" ", "%20");
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
@@ -328,6 +344,7 @@ public class Client {
                     + userName + "/" + firstName + "/"+ lastName + "/" + password 
                     + "/" + street + "/" +streetNumber + "/" + cityName + "/" + cityCountry;
             
+            URLAddress = URLAddress.replace(" ", "%20");
             
             String inputString = null;
             int responseCode = 0;
@@ -456,6 +473,8 @@ public class Client {
         try {
             String URLAddress = "http://localhost:8080/Server/store/users/wireMoneyToUser/" + userName + "/" + money;
             
+            URLAddress = URLAddress.replace(" ", "%20");
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
@@ -492,6 +511,8 @@ public class Client {
         try {
             String URLAddress = "http://localhost:8080/Server/store/users/changeUserAddress/" + userName + "/" + street + "/" +streetNumber;
             
+            URLAddress = URLAddress.replace(" ", "%20");
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
@@ -527,6 +548,8 @@ public class Client {
         
         try {
             String URLAddress = "http://localhost:8080/Server/store/categories/createCategory/" + categoryName + "/" + superCategoryName;
+            
+            URLAddress = URLAddress.replace(" ", "%20");
             
             String inputString = null;
             int responseCode = 0;
@@ -609,6 +632,8 @@ public class Client {
                     + articleName + "/" + articlePrice + "/" + articleDescription + 
                     "/" + articleCategory + "/" +owner;
             
+            URLAddress = URLAddress.replace(" ", "%20");
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
@@ -647,6 +672,8 @@ public class Client {
             String URLAddress = "http://localhost:8080/Server/store/articles/changeArticlePrice/" 
                     + articleName + "/" + newPrice;
             
+            URLAddress = URLAddress.replace(" ", "%20");
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
@@ -684,6 +711,8 @@ public class Client {
             String URLAddress = "http://localhost:8080/Server/store/articles/setArticleDiscount/" 
                     + articleName + "/" + discount;
             
+            URLAddress = URLAddress.replace(" ", "%20");
+            
             String inputString = null;
             int responseCode = 0;
             URL url = new URL(URLAddress);
@@ -719,6 +748,9 @@ public class Client {
         
         
         String URLAddress = "http://localhost:8080/Server/store/articles/getUserArticles/" + username;
+        
+        URLAddress = URLAddress.replace(" ", "%20");
+        
         String inputString = null;
         int responseCode = 0;
         
@@ -753,6 +785,45 @@ public class Client {
             } catch (IOException e) {e.printStackTrace();}
             
         } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
+    }
+    
+    private void addToCart(String articleName, String articleAmmount, String username) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/cart/addToCart/" 
+                    + articleName + "/" + articleAmmount + "/" + username;
+            
+            URLAddress = URLAddress.replace(" ", "%20");
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
     }
     
 }

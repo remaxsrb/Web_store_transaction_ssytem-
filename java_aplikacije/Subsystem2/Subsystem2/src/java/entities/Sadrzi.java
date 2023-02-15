@@ -28,7 +28,8 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Sadrzi.findAll", query = "SELECT s FROM Sadrzi s"),
     @NamedQuery(name = "Sadrzi.findByIdKorpa", query = "SELECT s FROM Sadrzi s WHERE s.sadrziPK.idKorpa = :idKorpa"),
     @NamedQuery(name = "Sadrzi.findByIdArtikal", query = "SELECT s FROM Sadrzi s WHERE s.sadrziPK.idArtikal = :idArtikal"),
-    @NamedQuery(name = "Sadrzi.findByKolicinaArtikla", query = "SELECT s FROM Sadrzi s WHERE s.kolicinaArtikla = :kolicinaArtikla")})
+    @NamedQuery(name = "Sadrzi.findByKolicinaArtikla", query = "SELECT s FROM Sadrzi s WHERE s.kolicinaArtikla = :kolicinaArtikla"),
+    @NamedQuery(name = "Sadrzi.findByArtikalKorpa", query = "SELECT s FROM Sadrzi s WHERE s.sadrziPK.idKorpa = :idKorpa AND s.sadrziPK.idArtikal = :idArtikal")})
 public class Sadrzi implements Serializable {
 
     private static final long serialVersionUID = 1L;

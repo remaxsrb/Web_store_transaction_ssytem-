@@ -318,7 +318,22 @@ public class Subsystem2 {
     
     private ObjectMessage getArticlesForOwner(String username) {
         
-        List<Artikal> articles = em.createNamedQuery("Artikal.findByProdavac", Artikal.class).
+        
+        ArrayList<String> returnStrings = new ArrayList<>();
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList();
+        
+        Korisnik userControlVar = (users.isEmpty()? null : users.get(0));
+        
+        if(userControlVar == null) 
+        {
+            returnStrings.add("Korisnik ne postoji u bazi!");
+        }
+        else 
+        {
+            List<Artikal> articles = em.createNamedQuery("Artikal.findByProdavac", Artikal.class).
                 setParameter("korisnickoIme", username).
                 getResultList();
         
@@ -327,9 +342,131 @@ public class Subsystem2 {
         for (Artikal article : articles) 
             articlesString.add(article.getNaziv());
         
-        return context.createObjectMessage(articlesString);
+        returnStrings = articlesString;
+        }
+        
+        
+        return context.createObjectMessage(returnStrings);
         
     }
+    
+    private TextMessage addToCart(String articleName, int articleAmmount, String user) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+        List<Artikal> articles = em.createNamedQuery("Artikal.findByNaziv", Artikal.class).
+                setParameter("naziv", articleName).
+                getResultList();
+        
+        Artikal article= (articles.isEmpty()? null : articles.get(0));
+        
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", user).
+                getResultList();
+        
+        Korisnik userControlVar = (users.isEmpty()? null : users.get(0));
+        
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(article==null) 
+        {
+            responseText = "Article is not in database";
+            returnStatus = -1;
+        }
+        else if (userControlVar==null) 
+        {
+            responseText = "User is not in database";
+            returnStatus = -1;
+        }
+        else if (article.getProdavac().getKorisnickoIme().equals(user)) 
+        {
+            responseText = "User can not purchase an item from himself";
+            returnStatus = -1;
+        }
+        else 
+        {
+            
+            Korpa cart = em.createNamedQuery("Korpa.findByKorisnickoIme", Korpa.class).
+                setParameter("korisnickoIme", userControlVar).
+                getResultList().get(0);
+            
+            List<Sadrzi> articleInCartArr = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
+                setParameter("idKorpa", cart.getIdKorpa()).
+                setParameter("idArtikal", article.getIdArtikal()).
+                getResultList();
+            
+            Sadrzi articleInCart = (articleInCartArr.isEmpty()? null : articleInCartArr.get(0));
+            
+            if(articleInCart==null) 
+            {
+                cart.setUkupnaCena(article.getCena() * articleAmmount);
+            
+                Sadrzi addArticleToCart = new Sadrzi(cart.getIdKorpa(),article.getIdArtikal());
+                addArticleToCart.setKolicinaArtikla(articleAmmount);
+            
+                try {
+                    em.getTransaction().begin();
+                    em.persist(addArticleToCart);
+                    em.getTransaction().commit();
+                } catch (ConstraintViolationException e) { e.printStackTrace();
+                }
+                finally 
+                {
+                    if (em.getTransaction().isActive())
+                            em.getTransaction().rollback();
+                }
+            }
+            else 
+            {
+                int newAmmount = articleInCart.getKolicinaArtikla() + articleAmmount;
+                articleInCart.setKolicinaArtikla(newAmmount);
+                
+                float newTotalPrice = cart.getUkupnaCena() + articleAmmount*article.getCena();
+                
+                cart.setUkupnaCena(newTotalPrice);
+                
+                try {
+                    em.getTransaction().begin();
+                    em.persist(articleInCart);
+                    em.getTransaction().commit();
+                } catch (ConstraintViolationException e) { e.printStackTrace();
+                }
+                finally 
+                {
+                    if (em.getTransaction().isActive())
+                            em.getTransaction().rollback();
+                }
+                
+            }
+            
+            try {
+                    em.getTransaction().begin();
+                    em.persist(cart);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) { e.printStackTrace();
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+            
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
+    
     
     private void run() 
     {
@@ -341,7 +478,8 @@ public class Subsystem2 {
         producer = context.createProducer();
         
         String categoryName, superCategoryName, articleName, articlePrice, 
-                articleDescription, articleCategory, articleDiscount, articleOwner; 
+                articleDescription, articleCategory, articleDiscount, 
+                articleOwner, user, articleAmmount; 
         
         while (true) 
         {
@@ -387,7 +525,12 @@ public class Subsystem2 {
                         
                         break;
                     case ADD_TO_CART:
-                       
+                        articleName = textMessage.getStringProperty("articleName");
+                        articleAmmount = textMessage.getStringProperty("articleAmmount");
+                        user = articleOwner = textMessage.getStringProperty("username");
+                        
+                        response = addToCart(articleName,Integer.parseInt(articleAmmount),user);
+                        
                         break;
                     case REMOVE_FROM_CART:
                        

@@ -33,7 +33,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "Korpa.findAll", query = "SELECT k FROM Korpa k"),
     @NamedQuery(name = "Korpa.findByIdKorpa", query = "SELECT k FROM Korpa k WHERE k.idKorpa = :idKorpa"),
-    @NamedQuery(name = "Korpa.findByUkupnaCena", query = "SELECT k FROM Korpa k WHERE k.ukupnaCena = :ukupnaCena")})
+    @NamedQuery(name = "Korpa.findByUkupnaCena", query = "SELECT k FROM Korpa k WHERE k.ukupnaCena = :ukupnaCena"),
+    @NamedQuery(name = "Korpa.findByKorisnickoIme", query = "SELECT k FROM Korpa k WHERE k.korisnickoIme = :korisnickoIme")})
 public class Korpa implements Serializable {
 
     private static final long serialVersionUID = 1L;
