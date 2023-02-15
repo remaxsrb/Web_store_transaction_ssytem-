@@ -467,6 +467,45 @@ public class Subsystem2 {
         return textMessage;
     }
     
+    private ObjectMessage viewCart(String username) 
+    {
+        ArrayList<String> returnStrings = new ArrayList<>();
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList();
+        
+        Korisnik userControlVar = (users.isEmpty()? null : users.get(0));
+        
+        if(userControlVar == null) 
+        {
+            returnStrings.add("User is not in database!");
+        }
+        else 
+        {
+            Korpa cart = em.createNamedQuery("Korpa.findByKorisnickoIme", Korpa.class).
+                setParameter("korisnickoIme", userControlVar).
+                getResultList().get(0);
+        
+            List<Sadrzi> articlesInCart = em.createNamedQuery("Sadrzi.findByIdKorpa", Sadrzi.class).
+                setParameter("idKorpa", cart.getIdKorpa()).
+                getResultList();
+            
+            if(articlesInCart.isEmpty()) 
+            {
+                returnStrings.add("User has nothing in cart!");
+            }
+            else 
+            {
+                for (Sadrzi s:articlesInCart) 
+                    returnStrings.add(s.getArtikal().getNaziv() + "|" + s.getKolicinaArtikla());
+            }
+            
+        }
+        
+        
+        return context.createObjectMessage(returnStrings);
+    }
     
     private void run() 
     {
@@ -527,7 +566,7 @@ public class Subsystem2 {
                     case ADD_TO_CART:
                         articleName = textMessage.getStringProperty("articleName");
                         articleAmmount = textMessage.getStringProperty("articleAmmount");
-                        user = articleOwner = textMessage.getStringProperty("username");
+                        user = textMessage.getStringProperty("username");
                         
                         response = addToCart(articleName,Integer.parseInt(articleAmmount),user);
                         
@@ -543,7 +582,8 @@ public class Subsystem2 {
                         response = getArticlesForOwner(articleOwner);
                         break;
                     case VIEW_CART:
-                       
+                        user = textMessage.getStringProperty("username");
+                        response = viewCart(user);
                         break;
                 }
                 

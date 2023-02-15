@@ -247,6 +247,9 @@ public class Client {
                 
                 case VIEW_CART:
                     
+                    System.out.println("Korisnicko ime korisnika: ");
+                    username = input.readLine();
+                    getUserCart(username);
                     break;
                
                 case USER_ORDERS:
@@ -824,6 +827,51 @@ public class Client {
             } catch (IOException e) {}
             
         } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
+    private void getUserCart(String username) 
+    {
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/cart/viewCart/" + username;
+        
+        URLAddress = URLAddress.replace(" ", "%20");
+        
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] articlesInCart = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
+
+                System.out.println("Artikli u korpi: ");
+               
+                for (String article : articlesInCart) 
+                {     
+
+                    System.out.println(article); 
+                }
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
     
 }
