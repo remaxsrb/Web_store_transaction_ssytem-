@@ -59,8 +59,8 @@ public class Client {
         System.out.println("\t6.  Kreiranje artikla"); //subsystem2 - DONE
         System.out.println("\t7.  Menjanje cene artikla"); //subsystem2 - DONE
         System.out.println("\t8.  Postavljanje popusta za artikal"); //subsystem2 - DONE
-        System.out.println("\t9.  Dodavanje artikla u odredjenoj kolicini u korpu"); //subsystem2 
-        System.out.println("\t10. Brisanje artikla u odredjenoj kolicni iz korpe"); //subsystem2
+        System.out.println("\t9.  Dodavanje artikla u odredjenoj kolicini u korpu"); //subsystem2 - DONE
+        System.out.println("\t10. Brisanje artikla u odredjenoj kolicni iz korpe"); //subsystem2 - DONE
         
         System.out.println("\t11. Plaćanje, koje obuhvata kreiranje transakcije, "
                 + "kreiranje narudžbine sa njenim stavkama, i brisanje sadržaja iz korpe");  //subsystem3
@@ -70,7 +70,7 @@ public class Client {
         
         System.out.println("\t14. Dohvatanje svih kategorija"); //subsystem2 - DONE
         System.out.println("\t15. Dohvatanje svih artikala koje prodaje korisnik koji je poslao zahtev"); //subsystem2 - DONE
-        System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahtev"); //subsystem2
+        System.out.println("\t16. Dohvatanje sadržaja korpe korisnika koji je poslao zahtev"); //subsystem2 - DONE
         
         System.out.println("\t17. Dohvatanje svih narudžbina korisnika koji je poslao zahtev"); //subsystem3
         System.out.println("\t18. Dohvatanje svih narudžbina");  //subsystem3
@@ -225,6 +225,16 @@ public class Client {
                     break;
                 case REMOVE_FROM_CART:
                     
+                    System.out.println("Korisnicko ime: ");
+                    username = input.readLine();
+                    
+                    System.out.println("Naziv artikla: ");
+                    articleName = input.readLine();
+                    
+                    System.out.println("Kolicina artikla: ");
+                    articleAmmount = input.readLine();
+                    
+                    removeFromCart(articleName, articleAmmount, username); 
                     break;
                 case PAYMENT:
                     
@@ -796,6 +806,45 @@ public class Client {
         
         try {
             String URLAddress = "http://localhost:8080/Server/store/cart/addToCart/" 
+                    + articleName + "/" + articleAmmount + "/" + username;
+            
+            URLAddress = URLAddress.replace(" ", "%20");
+            
+            String inputString = null;
+            int responseCode = 0;
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                
+                myHttpConnection.setRequestMethod("POST");
+                myHttpConnection.setDoOutput(true);
+               
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "POST", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                 BufferedReader input = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                while ((inputString = input.readLine()) != null) 
+                    System.out.println(inputString);
+                input.close();   
+                System.out.println("----------------------------------------------------------");
+                
+            } catch (IOException e) {}
+            
+        } catch (MalformedURLException e) {System.out.println(errMsg);}
+    }
+    
+    private void removeFromCart(String articleName, String articleAmmount, String username) 
+    {
+        String errMsg = "Greska pri povezivanju";
+        
+        try {
+            String URLAddress = "http://localhost:8080/Server/store/cart/removeFromCart/" 
                     + articleName + "/" + articleAmmount + "/" + username;
             
             URLAddress = URLAddress.replace(" ", "%20");

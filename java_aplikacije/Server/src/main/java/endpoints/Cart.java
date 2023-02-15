@@ -95,6 +95,51 @@ public class Cart {
     }
 
     
+    @POST
+    @Path("removeFromCart/{articleName}/{articleAmmount}/{username}")
+    public Response removeFromCart(@PathParam("articleName") String articleName, 
+            @PathParam("articleAmmount") String articleAmmount,
+            @PathParam("username") String username) {
+        
+        try {
+            
+            JMSContext context = connectionFactory.createContext();
+            JMSProducer producer = context.createProducer();
+            JMSConsumer consumer = context.createConsumer(queue);
+            
+            //create message
+            
+            TextMessage textMessage = context.createTextMessage("request");
+            
+            textMessage.setByteProperty("request", REMOVE_FROM_CART);
+            textMessage.setIntProperty("podsistem", 2);
+            
+            textMessage.setStringProperty("articleName", articleName);
+            textMessage.setStringProperty("articleAmmount", articleAmmount);
+            textMessage.setStringProperty("username", username);
+            
+            producer.send(topic, textMessage);
+            
+            //response
+            
+            Message message = consumer.receive();
+            
+            if (!(message instanceof TextMessage)){
+                return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
+            }
+            TextMessage recievedTextMessage = (TextMessage) message;
+            String res = recievedTextMessage.getText();
+            int ret = recievedTextMessage.getIntProperty("status");
+            if (ret != 0) 
+                return Response.status(Response.Status.BAD_REQUEST).entity(res).build();
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(City.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    return Response.status(OK).entity("Article removed from cart!").build();
+    }
+    
     @GET
     @Path("viewCart/{username}")
     public Response viewCart(@PathParam("username") String username) {

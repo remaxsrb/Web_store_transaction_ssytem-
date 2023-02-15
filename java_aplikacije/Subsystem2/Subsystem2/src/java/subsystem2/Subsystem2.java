@@ -467,6 +467,132 @@ public class Subsystem2 {
         return textMessage;
     }
     
+    
+    private TextMessage removeFromCart(String articleName, int articleAmmount, String user) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+        List<Artikal> articles = em.createNamedQuery("Artikal.findByNaziv", Artikal.class).
+                setParameter("naziv", articleName).
+                getResultList();
+        
+        Artikal article= (articles.isEmpty()? null : articles.get(0));
+        
+        
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", user).
+                getResultList();
+        
+        Korisnik userControlVar = (users.isEmpty()? null : users.get(0));
+        
+        
+        String responseText = "";
+        int returnStatus=0;
+        
+        if(article==null) 
+        {
+            responseText = "Article is not in database";
+            returnStatus = -1;
+        }
+        else if (userControlVar==null) 
+        {
+            responseText = "User is not in database";
+            returnStatus = -1;
+        }
+        else 
+        {
+            
+            Korpa cart = em.createNamedQuery("Korpa.findByKorisnickoIme", Korpa.class).
+                setParameter("korisnickoIme", userControlVar).
+                getResultList().get(0);
+            
+            List<Sadrzi> articleInCartArr = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
+                setParameter("idKorpa", cart.getIdKorpa()).
+                setParameter("idArtikal", article.getIdArtikal()).
+                getResultList();
+            
+            Sadrzi articleInCart = (articleInCartArr.isEmpty()? null : articleInCartArr.get(0));
+            
+            if(articleInCart==null) 
+            {
+                responseText = "Article is not in cart!";
+            }
+            else 
+            {
+                
+                if(articleInCart.getKolicinaArtikla() <= articleAmmount) 
+                {
+                    
+                    float newTotalPrice = cart.getUkupnaCena() - articleInCart.getKolicinaArtikla()*article.getCena();
+                    
+                    cart.setUkupnaCena(newTotalPrice);
+                    
+                    try {
+                    em.getTransaction().begin();
+                    em.remove(articleInCart);
+                    em.getTransaction().commit();
+                    } catch (ConstraintViolationException e) { e.printStackTrace();
+                    }
+                    finally 
+                    {
+                        if (em.getTransaction().isActive())
+                                em.getTransaction().rollback();
+                    }
+                }
+                else 
+                {
+                    float newTotalPrice = cart.getUkupnaCena() - articleAmmount*article.getCena();
+                    
+                    cart.setUkupnaCena(newTotalPrice);
+                    
+                    int newArticleAmmount = articleInCart.getKolicinaArtikla() - articleAmmount;
+                    
+                    articleInCart.setKolicinaArtikla(newArticleAmmount);
+                    
+                    
+                    try {
+                    em.getTransaction().begin();
+                    em.persist(articleInCart);
+                    em.getTransaction().commit();
+                    } catch (ConstraintViolationException e) { e.printStackTrace();
+                    }
+                    finally 
+                    {
+                        if (em.getTransaction().isActive())
+                                em.getTransaction().rollback();
+                    }
+                    
+                }
+                
+                try {
+                    em.getTransaction().begin();
+                    em.persist(cart);
+                    em.getTransaction().commit();
+                    } catch (ConstraintViolationException e) { e.printStackTrace();
+                    }
+                    finally 
+                    {
+                        if (em.getTransaction().isActive())
+                                em.getTransaction().rollback();
+                    }
+                
+            }
+            
+            
+        }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
+    
+    
     private ObjectMessage viewCart(String username) 
     {
         ArrayList<String> returnStrings = new ArrayList<>();
@@ -572,7 +698,12 @@ public class Subsystem2 {
                         
                         break;
                     case REMOVE_FROM_CART:
-                       
+                        
+                       articleName = textMessage.getStringProperty("articleName");
+                        articleAmmount = textMessage.getStringProperty("articleAmmount");
+                        user = textMessage.getStringProperty("username");
+                        
+                        response = removeFromCart(articleName,Integer.parseInt(articleAmmount),user);
                         break;
                     case ALL_CATEGORIES:
                        response = getCategories();
