@@ -49,10 +49,10 @@ public class Subsystem2 {
     @Resource(lookup = "myConnFactory")
     static ConnectionFactory connFactory;
     
-    @Resource(lookup="serverTestTopic")
+    @Resource(lookup="ZOCOVTOPIC")
     static Topic topic;
     
-    @Resource(lookup="kupjenas")
+    @Resource(lookup="KKP")
     static Queue serverQueue;
     
     
@@ -133,12 +133,12 @@ public class Subsystem2 {
         
         List<Kategorija> categories = em.createNamedQuery("Kategorija.findAll", Kategorija.class).getResultList();
         
-        ArrayList<Kategorija> k = new ArrayList<>();
+        ArrayList<String> categoriesString = new ArrayList<>();
         
         for (Kategorija category : categories) 
-            k.add(category);
+            categoriesString.add(category.getNaziv());
         
-        return context.createObjectMessage(k);
+        return context.createObjectMessage(categoriesString);
         
     }
     

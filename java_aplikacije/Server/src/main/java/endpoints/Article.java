@@ -4,7 +4,7 @@
  */
 package endpoints;
 
-import entities.Kategorija;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -44,10 +44,10 @@ public class Article {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "serverTestTopic")
+    @Resource(lookup = "ZOCOVTOPIC")
     Topic topic;
     
-    @Resource(lookup = "kupjenas")
+    @Resource(lookup = "KKP")
     Queue queue;
     
     @POST

@@ -4,7 +4,7 @@
  */
 package endpoints;
 
-import entities.Kategorija;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,10 +43,10 @@ public class Category {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "serverTestTopic")
+    @Resource(lookup = "ZOCOVTOPIC")
     Topic topic;
     
-    @Resource(lookup = "kupjenas")
+    @Resource(lookup = "KKP")
     Queue queue;
     
     @POST
@@ -96,7 +96,7 @@ public class Category {
     @Path("getCategories")
     public Response getCategories() {
     
-    ArrayList<Kategorija> categories = null;
+    ArrayList<String> categories = null;
         
         try {
             JMSContext context = connectionFactory.createContext();
@@ -116,15 +116,15 @@ public class Category {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
             }
             ObjectMessage objMsg = (ObjectMessage) mess;
-            categories = (ArrayList<Kategorija>) objMsg.getObject();
+            categories = (ArrayList<String>) objMsg.getObject();
             
         } catch (JMSException ex) {
-            Logger.getLogger(Kategorija.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(String.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassCastException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip objekta!").build();
         }
         
-        return Response.status(OK).entity(new GenericEntity<List<Kategorija>>(categories){}).build();
+        return Response.status(OK).entity(new GenericEntity<List<String>>(categories){}).build();
     }
     
 }

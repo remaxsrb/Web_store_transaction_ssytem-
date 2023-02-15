@@ -4,8 +4,7 @@
  */
 package endpoints;
 
-import entities.Grad;
-import entities.Korisnik;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -21,7 +20,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -45,10 +43,10 @@ public class Users {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "serverTestTopic")
+    @Resource(lookup = "ZOCOVTOPIC")
     Topic topic;
     
-    @Resource(lookup = "kupjenas")
+    @Resource(lookup = "KKP")
     Queue queue;
     
     @POST
@@ -105,19 +103,19 @@ public class Users {
     @Path("getusers")
     public Response getUsers() {
     
-    ArrayList<Korisnik> users = null;
+    ArrayList<String> users = null;
         
         try {
             JMSContext context = connectionFactory.createContext();
             JMSProducer producer = context.createProducer();
-            JMSConsumer consumer = context.createConsumer(topic);
+            JMSConsumer consumer = context.createConsumer(queue);
             
             // message
             TextMessage msg = context.createTextMessage("request");
             msg.setByteProperty("request", ALL_USERS);
             msg.setIntProperty("podsistem", 1);
             
-            producer.send(queue, msg);
+            producer.send(topic, msg);
             
             // response
             Message mess = consumer.receive();
@@ -125,15 +123,16 @@ public class Users {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
             }
             ObjectMessage objMsg = (ObjectMessage) mess;
-            users = (ArrayList<Korisnik>) objMsg.getObject();
+            users = (ArrayList<String>) objMsg.getObject();
             
         } catch (JMSException ex) {
-            Logger.getLogger(Grad.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(String.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassCastException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip objekta!").build();
         }
         
-        return Response.status(OK).entity(new GenericEntity<List<Korisnik>>(users){}).build();
+        return Response.status(OK).entity(new GenericEntity<List<String>>(users){}).build();
+    
     }
     
     @POST

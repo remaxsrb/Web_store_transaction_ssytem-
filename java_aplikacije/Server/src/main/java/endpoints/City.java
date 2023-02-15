@@ -4,7 +4,6 @@
  */
 package endpoints;
 
-import entities.Grad;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -20,7 +19,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -42,10 +40,10 @@ public class City {
     @Resource(lookup = "myConnFactory")
     ConnectionFactory connectionFactory;
     
-    @Resource(lookup = "serverTestTopic")
+    @Resource(lookup = "ZOCOVTOPIC")
     Topic topic;
     
-    @Resource(lookup = "kupjenas")
+    @Resource(lookup = "KKP")
     Queue queue;
     
     @POST
@@ -92,8 +90,8 @@ public class City {
     @GET
     @Path("getcities")
     public Response getCities() {
-    
-    ArrayList<Grad> cities = null;
+        
+       ArrayList<String> cities = null;
         
         try {
             JMSContext context = connectionFactory.createContext();
@@ -113,15 +111,15 @@ public class City {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip poruke!").build();
             }
             ObjectMessage objMsg = (ObjectMessage) mess;
-            cities = (ArrayList<Grad>) objMsg.getObject();
+            cities = (ArrayList<String>) objMsg.getObject();
             
         } catch (JMSException ex) {
-            Logger.getLogger(Grad.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(String.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassCastException ex) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Greska: Neodgovarajuci tip objekta!").build();
         }
         
-        return Response.status(OK).entity(new GenericEntity<List<Grad>>(cities){}).build();
+        return Response.status(OK).entity(new GenericEntity<List<String>>(cities){}).build();
     }
        
 }

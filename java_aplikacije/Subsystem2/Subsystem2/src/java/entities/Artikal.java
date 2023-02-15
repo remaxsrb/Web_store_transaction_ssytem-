@@ -14,10 +14,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -63,8 +63,11 @@ public class Artikal implements Serializable {
     @Column(name = "Popust")
     private int popust;
     @JoinColumn(name = "Kategorija", referencedColumnName = "idKategorija")
-    @OneToOne(optional = false)
+    @ManyToOne(optional = false)
     private Kategorija kategorija;
+    @JoinColumn(name = "Prodavac", referencedColumnName = "KorisnickoIme")
+    @ManyToOne(optional = false)
+    private Korisnik prodavac;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "artikal")
     private List<Sadrzi> sadrziList;
 
@@ -128,6 +131,14 @@ public class Artikal implements Serializable {
 
     public void setKategorija(Kategorija kategorija) {
         this.kategorija = kategorija;
+    }
+
+    public Korisnik getProdavac() {
+        return prodavac;
+    }
+
+    public void setProdavac(Korisnik prodavac) {
+        this.prodavac = prodavac;
     }
 
     @XmlTransient

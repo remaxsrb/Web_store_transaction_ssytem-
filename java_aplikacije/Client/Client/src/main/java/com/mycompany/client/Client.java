@@ -7,23 +7,12 @@ package com.mycompany.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.StringReader;
+
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import org.w3c.dom.CharacterData;
-import org.xml.sax.InputSource;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.util.ArrayList;
+
 
 /**
  *
@@ -274,20 +263,15 @@ public class Client {
         c.run();
     }
     
-    private static String getCharacterDataFromElement(Element e) {
-        Node child = e.getFirstChild();
-        if (child instanceof CharacterData cd) {
-            return cd.getData();
-        }
-        return "?";
-    }
-    
-    private static String getCharacterDataFromElement(Element e, String field) {
-        Node child = e.getFirstChild();
-        if (child instanceof CharacterData cd) {
-            return cd.getData();
-        }
-        return getCharacterDataFromElement((Element) e.getElementsByTagName(field).item(0));
+    private String[] trimIncomingString(String string) 
+    {
+        string = string.replace("[", "");
+        string = string.replace("]", "");
+        string = string.replace("\"", "");
+        
+        String[] strings = string.split(",");
+        
+        return strings;
     }
     
     private void createCity(String cityName, String cityCountry) 
@@ -376,7 +360,6 @@ public class Client {
         
         
         String URLAddress = "http://localhost:8080/Server/store/cities/getcities";
-        String inputString = null;
         int responseCode = 0;
         
         try {
@@ -392,33 +375,21 @@ public class Client {
                 
                 System.out.println("----------------------[ RESPONSE ]------------------------");
                 
-                BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
-                while ((inputString = in.readLine()) != null) {
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] cities = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
+
+                System.out.println("Gradovi u formatu: ");
+                System.out.println("Naziv|Drzava" + "\n");
+                
+                for (String city : cities) 
+                {     
                     
-			try {
-                            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			    DocumentBuilder db = dbf.newDocumentBuilder();
-			    InputSource is = new InputSource();
-			    is.setCharacterStream(new StringReader(inputString));
-
-			    Document doc = db.parse(is);
-			    NodeList nodes = doc.getElementsByTagName("grad");
-
-		            // iterate city elements
-                            for (int i = 0; i < nodes.getLength(); i++) {
-				Element element = (Element) nodes.item(i);
-                                
-                                String idGrad = getCharacterDataFromElement((Element) element.getElementsByTagName("idGrad").item(0));
-                                String naziv = getCharacterDataFromElement((Element) element.getElementsByTagName("naziv").item(0));
-                                String drzava = getCharacterDataFromElement((Element) element.getElementsByTagName("drzava").item(0));
-
-                           
-                                System.out.println("idGrad: " + idGrad + "\tNaziv: " + naziv + "\tDrzava: " + drzava);
-                                
-			    }
-			} catch (Exception e) { e.printStackTrace(); }   
-		}
-		in.close();   
+                    System.out.println(city); 
+                }
+                                        
 		System.out.println("-----------------------------------------------------------");
        
             } catch (IOException e) {e.printStackTrace();}
@@ -448,38 +419,22 @@ public class Client {
                 
                 System.out.println("----------------------[ RESPONSE ]------------------------");
                 
-                BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
-                while ((inputString = in.readLine()) != null) {
-                  
-			try {
-                            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			    DocumentBuilder db = dbf.newDocumentBuilder();
-			    InputSource is = new InputSource();
-			    is.setCharacterStream(new StringReader(inputString));
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] users = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
 
-			    Document doc = db.parse(is);
-			    NodeList nodes = doc.getElementsByTagName("korisnik");
-
-		            // iterate city elements
-                            for (int i = 0; i < nodes.getLength(); i++) {
-				Element element = (Element) nodes.item(i);
-                                
-                                String korisnickoIme = getCharacterDataFromElement((Element) element.getElementsByTagName("korisnickoIme").item(0));
-                                String ime = getCharacterDataFromElement((Element) element.getElementsByTagName("ime").item(0));
-                                String prezime = getCharacterDataFromElement((Element) element.getElementsByTagName("prezime").item(0));
-                                String novac = getCharacterDataFromElement((Element) element.getElementsByTagName("novac").item(0)); 
-                                String broj = getCharacterDataFromElement((Element) element.getElementsByTagName("broj").item(0));
-                                String ulica = getCharacterDataFromElement((Element) element.getElementsByTagName("ulica").item(0));
-                                String grad = getCharacterDataFromElement((Element) element.getElementsByTagName("naziv").item(0));
-                                String drzava = getCharacterDataFromElement((Element) element.getElementsByTagName("drzava").item(0));
-                           
-                                System.out.println("korisnickoIme: " + korisnickoIme + "\time: " + ime + "\tprezime: " + prezime
-                                + "\tnovac: " + novac + "\tulica: " + ulica + "\tbroj: " + broj + "\tgrad: " + grad + "\tdrzava: " + drzava);
-                                
-			    }
-			} catch (Exception e) { e.printStackTrace(); }   
-		}
-		in.close();   
+                System.out.println("Korisnici u formatu: ");
+                System.out.println("KorisnickoIme|Ime|Prezime|Novac" + "\n");
+                
+                for (String user : users) 
+                {     
+                    
+                    System.out.println(user); 
+                }
+                
+		incoming.close();   
 		System.out.println("-----------------------------------------------------------");
        
             } catch (IOException e) {e.printStackTrace();}
@@ -618,31 +573,19 @@ public class Client {
                 
                 System.out.println("----------------------[ RESPONSE ]------------------------");
                 
-                BufferedReader in = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
-                while ((inputString = in.readLine()) != null) {
-                  
-			try {
-                            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			    DocumentBuilder db = dbf.newDocumentBuilder();
-			    InputSource is = new InputSource();
-			    is.setCharacterStream(new StringReader(inputString));
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] categories = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
 
-			    Document doc = db.parse(is);
-			    NodeList nodes = doc.getElementsByTagName("kategorija");
-
-		            // iterate city elements
-                            for (int i = 0; i < nodes.getLength(); i++) {
-				Element element = (Element) nodes.item(i);
-                                
-                                String nazivKategorije = getCharacterDataFromElement((Element) element.getElementsByTagName("naziv").item(0));
-                                
-                           
-                                System.out.println("NazivKategorije: " + nazivKategorije);
-                                
-			    }
-			} catch (Exception e) { e.printStackTrace(); }   
-		}
-		in.close();   
+                System.out.println("Kategorije: ");
+               
+                for (String category : categories) 
+                {     
+                    
+                    System.out.println(category); 
+                }
 		System.out.println("-----------------------------------------------------------");
        
             } catch (IOException e) {e.printStackTrace();}

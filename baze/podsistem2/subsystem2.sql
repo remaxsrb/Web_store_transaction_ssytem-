@@ -31,12 +31,15 @@ CREATE TABLE `Artikal` (
   `Cena` float unsigned NOT NULL,
   `Popust` int unsigned NOT NULL,
   `Kategorija` int unsigned NOT NULL,
+  `Prodavac` varchar(45) NOT NULL,
   PRIMARY KEY (`idArtikal`),
   UNIQUE KEY `idArtikal_UNIQUE` (`idArtikal`),
   UNIQUE KEY `Naziv_UNIQUE` (`Naziv`),
-  UNIQUE KEY `Kategorija_UNIQUE` (`Kategorija`),
-  CONSTRAINT `fk_Kategorija` FOREIGN KEY (`Kategorija`) REFERENCES `Kategorija` (`idKategorija`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+  KEY `fk_Kategorija_idx` (`Kategorija`),
+  KEY `fk_Prodavac_idx` (`Prodavac`),
+  CONSTRAINT `fk_Kategorija` FOREIGN KEY (`Kategorija`) REFERENCES `Kategorija` (`idKategorija`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_Prodavac` FOREIGN KEY (`Prodavac`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +48,7 @@ CREATE TABLE `Artikal` (
 
 LOCK TABLES `Artikal` WRITE;
 /*!40000 ALTER TABLE `Artikal` DISABLE KEYS */;
-INSERT INTO `Artikal` VALUES (1,'Kosarkaska Lopta','outdoor',1500,5,2),(2,'Bianconeri duks','',3000,10,11);
+INSERT INTO `Artikal` VALUES (1,'Kosarkaska Lopta','outdoor',1500,5,2,'remax'),(2,'Bianconeri duks',NULL,3000,10,11,'jokan');
 /*!40000 ALTER TABLE `Artikal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -63,7 +66,7 @@ CREATE TABLE `Kategorija` (
   PRIMARY KEY (`idKategorija`),
   UNIQUE KEY `idKategorija_UNIQUE` (`idKategorija`),
   UNIQUE KEY `Naziv_UNIQUE` (`Naziv`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +75,7 @@ CREATE TABLE `Kategorija` (
 
 LOCK TABLES `Kategorija` WRITE;
 /*!40000 ALTER TABLE `Kategorija` DISABLE KEYS */;
-INSERT INTO `Kategorija` VALUES (1,'Lopta',NULL),(2,'Kosarkaska lopta',1),(3,'Fudbalska lopta',1),(4,'Odbojkaska lopta',1),(5,'Knjiga',NULL),(6,'Triler',5),(7,'Fantstika',5),(8,'Epska fantastika',7),(9,'Naucna fantastika',7),(10,'Duks',NULL),(11,'Duks sa kapuljacom',10),(12,'Duks bez kapuljace',10);
+INSERT INTO `Kategorija` VALUES (1,'Lopta',NULL),(2,'Kosarkaska lopta',1),(3,'Fudbalska lopta',1),(4,'Odbojkaska lopta',1),(5,'Knjiga',NULL),(6,'Triler',5),(7,'Fantstika',5),(8,'Epska fantastika',7),(9,'Naucna fantastika',7),(10,'Duks',NULL),(11,'Duks sa kapuljacom',10),(12,'Duks bez kapuljace',10),(17,'sezonskaKartaKKP',NULL);
 /*!40000 ALTER TABLE `Kategorija` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -165,4 +168,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-06 17:44:13
+-- Dump completed on 2023-02-14 22:52:45

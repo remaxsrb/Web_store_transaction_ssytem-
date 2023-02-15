@@ -46,10 +46,10 @@ public class Subsystem1 {
     @Resource(lookup = "myConnFactory")
     static ConnectionFactory connFactory;
     
-    @Resource(lookup="serverTestTopic")
+    @Resource(lookup="ZOCOVTOPIC")
     static Topic topic;
     
-    @Resource(lookup="kupjenas")
+    @Resource(lookup="KKP")
     static Queue serverQueue;
     
     //kreirati po jednog proizvodjaca i jednog potrosaca za svaku vezu sa drugim podsistemom
@@ -262,12 +262,13 @@ public class Subsystem1 {
         
         List<Grad> cities = em.createNamedQuery("Grad.findAll", Grad.class).getResultList();
         
-        ArrayList<Grad> g = new ArrayList<>();
+        ArrayList<String> stringCities = new ArrayList<>();
         
         for (Grad city : cities) 
-            g.add(city);
+            stringCities.add(city.getNaziv() + "|" + city.getDrzava());
+
         
-        return context.createObjectMessage(g);
+        return context.createObjectMessage(stringCities);
         
     }
     
@@ -276,12 +277,13 @@ public class Subsystem1 {
         
         List<Korisnik> users = em.createNamedQuery("Korisnik.findAll", Korisnik.class).getResultList();
         
-        ArrayList<Korisnik> k = new ArrayList<>();
+        ArrayList<String> usersString = new ArrayList<>();
         
         for (Korisnik user : users) 
-            k.add(user);
+            usersString.add(user.getKorisnickoIme() + "|" + user.getIme() + "|" 
+                    + user.getPrezime() + "|"  + user.getNovac());
         
-        return context.createObjectMessage(k);
+        return context.createObjectMessage(usersString);
     }
     
     private TextMessage createCity(String cityName, String cityCountry) 

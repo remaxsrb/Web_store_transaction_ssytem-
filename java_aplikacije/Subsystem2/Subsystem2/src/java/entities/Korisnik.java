@@ -5,6 +5,7 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,11 +13,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -48,6 +51,8 @@ public class Korisnik implements Serializable {
     @Size(min = 1, max = 45)
     @Column(name = "Sifra")
     private String sifra;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "prodavac")
+    private List<Artikal> artikalList;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "korisnickoIme")
     private Korpa korpa;
 
@@ -86,6 +91,15 @@ public class Korisnik implements Serializable {
 
     public void setSifra(String sifra) {
         this.sifra = sifra;
+    }
+
+    @XmlTransient
+    public List<Artikal> getArtikalList() {
+        return artikalList;
+    }
+
+    public void setArtikalList(List<Artikal> artikalList) {
+        this.artikalList = artikalList;
     }
 
     public Korpa getKorpa() {

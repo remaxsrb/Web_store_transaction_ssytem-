@@ -2,10 +2,17 @@
 <persistence version="2.2" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
   <!-- Define Persistence Unit -->
   <persistence-unit name="my_persistence_unit">
-    <class>entities.Grad</class>
-    <class>entities.Adresa</class>
-    <class>entities.Korisnik</class>
     <class>entities.Kategorija</class>
     <class>entities.Artikal</class>
+    <class>entities.subsystem1.Grad</class>
+    <class>entities.subsystem1.Korisnik</class>
+    <class>entities.subsystem1.Adresa</class>
+    <class>entities.subsystem2.Kategorija</class>
+    <class>entities.subsystem2.Artikal</class>
+    <class>entities.subsystem2.Korpa</class>
+    <class>entities.subsystem2.Korisnik</class>
+    <class>entities.Adresa</class>
+    <class>entities.Korisnik</class>
+    <class>entities.Grad</class>
   </persistence-unit>
 </persistence>
