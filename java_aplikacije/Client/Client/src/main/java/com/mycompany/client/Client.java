@@ -179,7 +179,11 @@ public class Client {
                     System.out.println("Kategorija artikla");
                     categoryName = input.readLine();
                     
-                    createArticle(articleName, articlePrice, articleDescription, categoryName);
+                    System.out.println("Korisnik koji prodaje artikal");
+                    username = input.readLine();
+                    
+                    
+                    createArticle(articleName, articlePrice, articleDescription, categoryName, username);
                     
                     break;
                 case MODIFY_ARTICLE_PRICE:
@@ -593,13 +597,14 @@ public class Client {
         } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
     
-    private void createArticle(String articleName, String articlePrice, String articleDescription, String articleCategory) 
+    private void createArticle(String articleName, String articlePrice, String articleDescription, String articleCategory, String owner) 
     {
         String errMsg = "Greska pri povezivanju";
         
         try {
             String URLAddress = "http://localhost:8080/Server/store/articles/createArticle/" 
-                    + articleName + "/" + articlePrice + "/" + articleDescription + "/" + articleCategory;
+                    + articleName + "/" + articlePrice + "/" + articleDescription + 
+                    "/" + articleCategory + "/" +owner;
             
             String inputString = null;
             int responseCode = 0;

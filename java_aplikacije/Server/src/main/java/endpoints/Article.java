@@ -51,11 +51,12 @@ public class Article {
     Queue queue;
     
     @POST
-    @Path("createArticle/{articleName}/{articlePrice}/{articleDescription}/{articleCategory}")
+    @Path("createArticle/{articleName}/{articlePrice}/{articleDescription}/{articleCategory}/{owner}")
     public Response createArticle(@PathParam("articleName") String articleName, 
             @PathParam("articlePrice") String articlePrice, 
             @PathParam("articleDescription") String articleDescription, 
-            @PathParam("articleCategory") String articleCategory ) {
+            @PathParam("articleCategory") String articleCategory,
+            @PathParam("owner") String owner) {
         
         try {
             
@@ -74,6 +75,7 @@ public class Article {
             textMessage.setStringProperty("articlePrice", articlePrice);
             textMessage.setStringProperty("articleDescription", articleDescription);
             textMessage.setStringProperty("articleCategory", articleCategory);
+            textMessage.setStringProperty("owner", owner);
             
             producer.send(topic, textMessage);
             

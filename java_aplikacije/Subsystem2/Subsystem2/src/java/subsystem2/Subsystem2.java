@@ -142,7 +142,7 @@ public class Subsystem2 {
         
     }
     
-    private TextMessage createArticle(String articleName, float articlePrice, String articleDescription, String articleCategory) 
+    private TextMessage createArticle(String articleName, float articlePrice, String articleDescription, String articleCategory, String articleOwner) 
     {
         TextMessage textMessage = null;
         try {
@@ -164,6 +164,12 @@ public class Subsystem2 {
         
         Kategorija categoryControlVar = (categories.isEmpty()? null : categories.get(0));
         
+        List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", articleOwner).
+                getResultList();
+        
+        Korisnik userControlVar = (users.isEmpty()? null : users.get(0));
+        
         String responseText = "";
         int returnStatus=0;
         
@@ -177,6 +183,11 @@ public class Subsystem2 {
             responseText = "Category is not in databse";
             returnStatus = -1;
         }
+        else if (userControlVar == null) 
+        {
+            responseText = "Owner is not in databse";
+            returnStatus = -1;
+        }
         else 
         {
             
@@ -185,6 +196,7 @@ public class Subsystem2 {
                 article.setOpis(articleDescription);
             }
             article.setKategorija(categoryControlVar);
+            article.setProdavac(userControlVar);
             try {
                     em.getTransaction().begin();
                     em.persist(article);
@@ -313,7 +325,8 @@ public class Subsystem2 {
         consumer = context.createDurableConsumer(topic, "sub2", msgSelector, false);
         producer = context.createProducer();
         
-        String categoryName, superCategoryName, articleName, articlePrice, articleDescription, articleCategory, articleDiscount; 
+        String categoryName, superCategoryName, articleName, articlePrice, 
+                articleDescription, articleCategory, articleDiscount, articleOwner; 
         
         while (true) 
         {
@@ -339,8 +352,8 @@ public class Subsystem2 {
                         articlePrice = textMessage.getStringProperty("articlePrice");
                         articleDescription = textMessage.getStringProperty("articleDescription");
                         articleCategory = textMessage.getStringProperty("articleCategory");
-                        
-                        response = createArticle(articleName, Float.parseFloat(articlePrice), articleDescription, articleCategory);
+                        articleOwner = textMessage.getStringProperty("owner");
+                        response = createArticle(articleName, Float.parseFloat(articlePrice), articleDescription, articleCategory, articleOwner);
                         
                         break;
                     case MODIFY_ARTICLE_PRICE:
