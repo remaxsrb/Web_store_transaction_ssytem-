@@ -596,25 +596,23 @@ public class Subsystem3 {
                 setParameter("naziv", articleName).
                 getResultList().get(0);
         
-        Sadrzi articleInCart = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
+//        Sadrzi articleInCart = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
+//                setParameter("idKorpa", cart.getIdKorpa()).
+//                setParameter("idArtikal", article.getIdArtikal()).
+//                getResultList().get(0);
+        
+        List<Sadrzi> articleInCartArr = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
                 setParameter("idKorpa", cart.getIdKorpa()).
                 setParameter("idArtikal", article.getIdArtikal()).
-                getResultList().get(0);
+                getResultList();
+            
+        Sadrzi articleInCart = (articleInCartArr.isEmpty()? null : articleInCartArr.get(0));
         
-        cart.setUkupnaCena(totalPrice);
+        if(articleInCart==null) 
+            articleInCart = new Sadrzi(cart.getIdKorpa(),article.getIdArtikal());
         
-        try {
-                em.getTransaction().begin();
-                em.persist(cart);
-                em.getTransaction().commit();
-                } catch (ConstraintViolationException e) { e.printStackTrace();}
-                finally 
-                {
-                    if (em.getTransaction().isActive())
-                            em.getTransaction().rollback();
-                }
+        articleInCart.setKolicinaArtikla(ammount); 
         
-        articleInCart.setKolicinaArtikla(ammount);
             try {
                     em.getTransaction().begin();
                     em.persist(articleInCart);
@@ -626,6 +624,21 @@ public class Subsystem3 {
                         if (em.getTransaction().isActive())
                                 em.getTransaction().rollback();
                     }
+            
+        cart.setUkupnaCena(totalPrice);
+        try {
+                em.getTransaction().begin();
+                em.persist(cart);
+                em.getTransaction().commit();
+                } catch (ConstraintViolationException e) { e.printStackTrace();}
+                finally 
+                {
+                    if (em.getTransaction().isActive())
+                            em.getTransaction().rollback();
+                }
+        
+        
+            
         
         
     }
