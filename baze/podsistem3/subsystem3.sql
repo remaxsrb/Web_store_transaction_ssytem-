@@ -28,7 +28,7 @@ CREATE TABLE `Adresa` (
   `idAdresa` int unsigned NOT NULL AUTO_INCREMENT,
   `Ulica` varchar(45) NOT NULL,
   `Broj` int unsigned NOT NULL,
-  PRIMARY KEY (`idAdresa`,`Ulica`,`Broj`),
+  PRIMARY KEY (`idAdresa`),
   UNIQUE KEY `idAdresa_UNIQUE` (`idAdresa`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -85,7 +85,7 @@ CREATE TABLE `Grad` (
   `Drzava` varchar(45) NOT NULL,
   PRIMARY KEY (`idGrad`),
   UNIQUE KEY `idGrad_UNIQUE` (`idGrad`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,7 +94,7 @@ CREATE TABLE `Grad` (
 
 LOCK TABLES `Grad` WRITE;
 /*!40000 ALTER TABLE `Grad` DISABLE KEYS */;
-INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Nis','Srbija'),(4,'Prizren','Srbija');
+INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Nis','Srbija'),(4,'Prizren','Srbija'),(5,'Cacak','Srbija');
 /*!40000 ALTER TABLE `Grad` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -126,7 +126,7 @@ CREATE TABLE `Korisnik` (
 
 LOCK TABLES `Korisnik` WRITE;
 /*!40000 ALTER TABLE `Korisnik` DISABLE KEYS */;
-INSERT INTO `Korisnik` VALUES ('jokan',1,1,50000),('remax',1,2,20000);
+INSERT INTO `Korisnik` VALUES ('jokan',1,1,50000),('remax',1,2,20000),('zoc',1,1,0);
 /*!40000 ALTER TABLE `Korisnik` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -146,7 +146,7 @@ CREATE TABLE `Korpa` (
   UNIQUE KEY `Korisnik_UNIQUE` (`Korisnik`),
   KEY `fk_Korpa_s3_1_idx` (`Korisnik`),
   CONSTRAINT `fk_Korpa_s3_1` FOREIGN KEY (`Korisnik`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -155,6 +155,7 @@ CREATE TABLE `Korpa` (
 
 LOCK TABLES `Korpa` WRITE;
 /*!40000 ALTER TABLE `Korpa` DISABLE KEYS */;
+INSERT INTO `Korpa` VALUES (2,0,'zoc');
 /*!40000 ALTER TABLE `Korpa` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -257,9 +258,8 @@ CREATE TABLE `Transakcija` (
   `VremePlacanja` datetime NOT NULL,
   `idNarudzbina` int unsigned NOT NULL,
   PRIMARY KEY (`idTransakcija`),
-  UNIQUE KEY `idTransakcija_UNIQUE` (`idTransakcija`),
-  UNIQUE KEY `idNarudzbina_UNIQUE` (`idNarudzbina`),
-  CONSTRAINT `fk_Transakcija` FOREIGN KEY (`idTransakcija`) REFERENCES `Transakcija` (`idTransakcija`) ON DELETE RESTRICT ON UPDATE CASCADE
+  KEY `fk_Transakcija_1_idx` (`idNarudzbina`),
+  CONSTRAINT `fk_Transakcija_1` FOREIGN KEY (`idNarudzbina`) REFERENCES `Narudzbina` (`idNarudzbina`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -281,4 +281,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-16  2:37:26
+-- Dump completed on 2023-02-16 12:25:17

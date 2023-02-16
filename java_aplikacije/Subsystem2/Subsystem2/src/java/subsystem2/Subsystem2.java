@@ -810,6 +810,12 @@ public class Subsystem2 {
                     ammount = msg.getIntProperty("ammount");
                     removeFromCart(articleName, ammount,username);
                     break;
+                case 3:
+                    float monneyUpdate = msg.getFloatProperty("moneyToUpdate");
+                    username = msg.getStringProperty("username");
+                    updateUserBalance(username, monneyUpdate);
+                    
+                    break;
                 
             }
         } catch (JMSException ex) {

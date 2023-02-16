@@ -8,9 +8,9 @@
     <class>entities.Stavka</class>
     <class>entities.Artikal</class>
     <class>entities.Grad</class>
-    <class>entities.Transakcija</class>
     <class>entities.Korpa</class>
     <class>entities.Sadrzi</class>
+    <class>entities.Transakcija</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/podsistem3?zeroDateTimeBehavior=CONVERT_TO_NULL"/>
       <property name="javax.persistence.jdbc.user" value="remax"/>

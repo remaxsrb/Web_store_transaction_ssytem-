@@ -7,16 +7,15 @@ package entities;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -34,10 +33,15 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Transakcija.findAll", query = "SELECT t FROM Transakcija t"),
     @NamedQuery(name = "Transakcija.findByIdTransakcija", query = "SELECT t FROM Transakcija t WHERE t.idTransakcija = :idTransakcija"),
     @NamedQuery(name = "Transakcija.findBySumaNovca", query = "SELECT t FROM Transakcija t WHERE t.sumaNovca = :sumaNovca"),
-    @NamedQuery(name = "Transakcija.findByVremePlacanja", query = "SELECT t FROM Transakcija t WHERE t.vremePlacanja = :vremePlacanja"),
-    @NamedQuery(name = "Transakcija.findByIdNarudzbina", query = "SELECT t FROM Transakcija t WHERE t.idNarudzbina = :idNarudzbina")})
+    @NamedQuery(name = "Transakcija.findByVremePlacanja", query = "SELECT t FROM Transakcija t WHERE t.vremePlacanja = :vremePlacanja")})
 public class Transakcija implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "idTransakcija")
+    private Integer idTransakcija;
     @Basic(optional = false)
     @NotNull
     @Column(name = "SumaNovca")
@@ -47,22 +51,9 @@ public class Transakcija implements Serializable {
     @Column(name = "VremePlacanja")
     @Temporal(TemporalType.TIMESTAMP)
     private Date vremePlacanja;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "idNarudzbina")
-    private int idNarudzbina;
-
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "idTransakcija")
-    private Integer idTransakcija;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "transakcija1")
-    private Transakcija transakcija;
-    @JoinColumn(name = "idTransakcija", referencedColumnName = "idTransakcija", insertable = false, updatable = false)
-    @OneToOne(optional = false)
-    private Transakcija transakcija1;
+    @JoinColumn(name = "idNarudzbina", referencedColumnName = "idNarudzbina")
+    @ManyToOne(optional = false)
+    private Narudzbina idNarudzbina;
 
     public Transakcija() {
     }
@@ -71,11 +62,10 @@ public class Transakcija implements Serializable {
         this.idTransakcija = idTransakcija;
     }
 
-    public Transakcija(Integer idTransakcija, float sumaNovca, Date vremePlacanja, int idNarudzbina) {
+    public Transakcija(Integer idTransakcija, float sumaNovca, Date vremePlacanja) {
         this.idTransakcija = idTransakcija;
         this.sumaNovca = sumaNovca;
         this.vremePlacanja = vremePlacanja;
-        this.idNarudzbina = idNarudzbina;
     }
 
     public Integer getIdTransakcija() {
@@ -86,21 +76,28 @@ public class Transakcija implements Serializable {
         this.idTransakcija = idTransakcija;
     }
 
-
-    public Transakcija getTransakcija() {
-        return transakcija;
+    public float getSumaNovca() {
+        return sumaNovca;
     }
 
-    public void setTransakcija(Transakcija transakcija) {
-        this.transakcija = transakcija;
+    public void setSumaNovca(float sumaNovca) {
+        this.sumaNovca = sumaNovca;
     }
 
-    public Transakcija getTransakcija1() {
-        return transakcija1;
+    public Date getVremePlacanja() {
+        return vremePlacanja;
     }
 
-    public void setTransakcija1(Transakcija transakcija1) {
-        this.transakcija1 = transakcija1;
+    public void setVremePlacanja(Date vremePlacanja) {
+        this.vremePlacanja = vremePlacanja;
+    }
+
+    public Narudzbina getIdNarudzbina() {
+        return idNarudzbina;
+    }
+
+    public void setIdNarudzbina(Narudzbina idNarudzbina) {
+        this.idNarudzbina = idNarudzbina;
     }
 
     @Override
@@ -126,30 +123,6 @@ public class Transakcija implements Serializable {
     @Override
     public String toString() {
         return "entities.Transakcija[ idTransakcija=" + idTransakcija + " ]";
-    }
-
-    public float getSumaNovca() {
-        return sumaNovca;
-    }
-
-    public void setSumaNovca(float sumaNovca) {
-        this.sumaNovca = sumaNovca;
-    }
-
-    public Date getVremePlacanja() {
-        return vremePlacanja;
-    }
-
-    public void setVremePlacanja(Date vremePlacanja) {
-        this.vremePlacanja = vremePlacanja;
-    }
-
-    public int getIdNarudzbina() {
-        return idNarudzbina;
-    }
-
-    public void setIdNarudzbina(int idNarudzbina) {
-        this.idNarudzbina = idNarudzbina;
     }
     
 }

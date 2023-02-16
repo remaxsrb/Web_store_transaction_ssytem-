@@ -6,6 +6,7 @@ package subsystem3;
 
 import entities.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +35,7 @@ public class Subsystem3 {
 
     private static final byte CREATE_CITY = 1;
     private static final byte CREATE_USER = 2;
-    private static final byte WIRE_MONEY_TO_USER = 3;
+    private static final byte DECREASE_USER_BALANCE = 3;
     private static final byte CHANGE_USER_ADDRESS = 4;
     
     private static final byte CREATE_ARTICLE = 6;
@@ -165,6 +166,216 @@ public class Subsystem3 {
         return context.createObjectMessage(returnStrings);
     }
     
+    private ObjectMessage getAllTransactions() 
+    {
+        ArrayList<String> returnStrings = new ArrayList<>();
+        
+        
+            List<Transakcija> transactions = em.createNamedQuery("Transakcija.findAll", Transakcija.class).
+                getResultList();
+        
+        ArrayList<String> articlesString = new ArrayList<>();
+        
+        if(transactions.isEmpty()) 
+        {
+            returnStrings.add("There are no transactions in system");
+        }
+        else 
+        {
+            for (Transakcija transaction : transactions) 
+            {
+                String user = transaction.getIdNarudzbina().getKorisnik().getKorisnickoIme();
+                articlesString.add(user + "|" + transaction.getSumaNovca() + "|" +transaction.getVremePlacanja().toString());
+            }
+        }
+        
+        returnStrings = articlesString;
+        
+        return context.createObjectMessage(returnStrings);
+    }
+    
+    private TextMessage payment(String username) 
+    {
+        TextMessage textMessage = null;
+        try {
+            
+            List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList();
+        
+            Korisnik user = (users.isEmpty()? null : users.get(0));
+            
+            String responseText = "";
+            int returnStatus=0;
+        
+            if(user==null) 
+            {
+                responseText = "User does not exist in database!";
+                returnStatus = -1;
+            }
+            else 
+            {
+                
+                Korpa cart = em.createNamedQuery("Korpa.findByKorisnickoIme", Korpa.class).
+                setParameter("korisnickoIme", user).
+                getResultList().get(0);
+                
+                List<Sadrzi> articlesInCart = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
+                setParameter("idKorpa", cart.getIdKorpa()).
+                getResultList();
+            
+                
+        
+               
+                if(cart.getUkupnaCena()>user.getNovac()) 
+                {
+                    responseText = "User does not have enough money!";
+                    returnStatus = -1;
+                }
+                else if (articlesInCart.isEmpty()) 
+                {
+                    responseText = "User does not have anything in cart!";
+                    returnStatus = -1;
+                }
+                else 
+                {
+                    Date timeOfCreation = new Date();
+                    
+                    Narudzbina order = new Narudzbina();
+                    order.setKorisnik(user);
+                    order.setUkupnaCena(cart.getUkupnaCena());
+                    order.setVremeKreiranja(timeOfCreation);
+                    
+                    try {
+                        em.getTransaction().begin();
+                        em.persist(order);
+                        em.getTransaction().commit();
+                    } catch (EntityExistsException e) {}
+                    finally 
+                    {
+                        if (em.getTransaction().isActive())
+                                em.getTransaction().rollback();
+                    }
+                    
+                    Narudzbina newCreatedOrder = em.createNamedQuery("Narudzbina.findByVremeKreiranja", Narudzbina.class).
+                    setParameter("vremeKreiranja", timeOfCreation).
+                    getResultList().get(0);
+                    
+                    for (Sadrzi articleInCart : articlesInCart) 
+                    {
+                        Stavka purchase = new Stavka();
+                        purchase.setIdArtikal(articleInCart.getArtikal());
+                        purchase.setIdNarudzbina(newCreatedOrder);
+                        purchase.setJedinicnaCena(articleInCart.getArtikal().getCena());
+                        purchase.setKolicina(articleInCart.getKolicinaArtikla());
+                        
+                        try {
+                            em.getTransaction().begin();
+                            em.persist(purchase);
+                            em.getTransaction().commit();
+                        } catch (EntityExistsException e) {}
+                        finally 
+                        {
+                            if (em.getTransaction().isActive())
+                                    em.getTransaction().rollback();
+                        }
+                        
+                    }
+                    
+                    Date timeOfPayment = new Date();
+                    float moneyToBePayed = order.getUkupnaCena();
+                    
+                    Transakcija transaction = new Transakcija();
+                    transaction.setIdNarudzbina(order);
+                    transaction.setSumaNovca(moneyToBePayed);
+                    transaction.setVremePlacanja(timeOfPayment);
+                    
+                    try {
+                            em.getTransaction().begin();
+                            em.persist(transaction);
+                            em.getTransaction().commit();
+                        } catch (EntityExistsException e) {}
+                        finally 
+                        {
+                            if (em.getTransaction().isActive())
+                                    em.getTransaction().rollback();
+                        }
+                    
+                    user.setNovac(user.getNovac()- moneyToBePayed);
+                    
+                    try {
+                            em.getTransaction().begin();
+                            em.persist(user);
+                            em.getTransaction().commit();
+                        } catch (EntityExistsException e) {}
+                        finally 
+                        {
+                            if (em.getTransaction().isActive())
+                                    em.getTransaction().rollback();
+                        }
+                    
+                    TextMessage txtmsgSub1 = context.createTextMessage("sinhronizacija");
+                    txtmsgSub1.setByteProperty("request", DECREASE_USER_BALANCE);
+                    txtmsgSub1.setStringProperty("username", user.getKorisnickoIme());
+                    txtmsgSub1.setFloatProperty("moneyToUpdate", moneyToBePayed);
+            
+                    subsystem1_producer.send(subsystem3_subsystem1_queue, txtmsgSub1);
+                    
+                    TextMessage txtmsgSub2 = context.createTextMessage("sinhronizacija");
+                    txtmsgSub2.setByteProperty("request", DECREASE_USER_BALANCE);
+                    txtmsgSub2.setStringProperty("username", user.getKorisnickoIme());
+                    txtmsgSub2.setFloatProperty("moneyToUpdate", user.getNovac());
+            
+                    subsystem2_producer.send(subsystem3_subsystem2_queue, txtmsgSub2);
+                    
+                    for (Sadrzi articleInCart : articlesInCart) 
+                    {
+                        try {
+                            em.getTransaction().begin();
+                            em.remove(articleInCart);
+                            em.getTransaction().commit();
+                        } catch (ConstraintViolationException e) { e.printStackTrace();}
+                        finally 
+                        {
+                            if (em.getTransaction().isActive())
+                                    em.getTransaction().rollback();
+                        }
+                        
+                        txtmsgSub2 = context.createTextMessage("sinhronizacija");
+                        txtmsgSub2.setByteProperty("request", REMOVE_FROM_CART);
+                        txtmsgSub2.setStringProperty("username", user.getKorisnickoIme());
+                        txtmsgSub2.setStringProperty("articleName", articleInCart.getArtikal().getNaziv());
+                        txtmsgSub2.setIntProperty("ammount", articleInCart.getKolicinaArtikla());
+            
+                        subsystem2_producer.send(subsystem3_subsystem2_queue, txtmsgSub2);
+                        
+                    }
+                    
+                    cart.setUkupnaCena(0);
+                    try {
+                            em.getTransaction().begin();
+                            em.remove(cart);
+                            em.getTransaction().commit();
+                        } catch (ConstraintViolationException e) { e.printStackTrace();}
+                        finally 
+                        {
+                            if (em.getTransaction().isActive())
+                                    em.getTransaction().rollback();
+                        }   
+                    
+                }
+                
+            }
+            
+        textMessage = context.createTextMessage(responseText);
+        textMessage.setIntProperty("status", returnStatus);
+            
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem3.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return textMessage;
+    }
     
     private void createUser(String username, String cityName, String cityCountry, String streetName, int streetNumber) 
     {
@@ -378,7 +589,7 @@ public class Subsystem3 {
                 getResultList().get(0);
         
         Korpa cart = em.createNamedQuery("Korpa.findByKorisnickoIme", Korpa.class).
-                setParameter("korisnickoIme", user).
+                setParameter("korisnik", user).
                 getResultList().get(0);
         
         Artikal article = em.createNamedQuery("Artikal.findByNaziv", Artikal.class).
@@ -521,16 +732,16 @@ public class Subsystem3 {
                     break;
                 case ADD_TO_CART:
                     articleName = msg.getStringProperty("articleName");
-                    username = msg.getStringProperty("username");
-                    ammount = msg.getIntProperty("totalPrice");
-                    price = msg.getFloatProperty("price");
+                    username = msg.getStringProperty("user");
+                    ammount = msg.getIntProperty("numberOfArticlesInCart");
+                    price = msg.getFloatProperty("totalPrice");
                     addToCart(articleName, price, ammount, username);
                     break;
                 case REMOVE_FROM_CART:
                     articleName = msg.getStringProperty("articleName");
-                    username = msg.getStringProperty("username");
-                    ammount = msg.getIntProperty("totalPrice");
-                    price = msg.getFloatProperty("price");
+                    username = msg.getStringProperty("user");
+                    ammount = msg.getIntProperty("numberOfArticlesInCart");
+                    price = msg.getFloatProperty("totalPrice");
                     removeFromCart(articleName, price, ammount, username);
                     break;
             }
@@ -572,7 +783,8 @@ public class Subsystem3 {
                 switch(request) {
                 
                     case PAYMENT:
-                        
+                        username = textMessage.getStringProperty("username");
+                        response = payment(username);
                         break;
                         
                     case USER_ORDERS:
@@ -587,7 +799,7 @@ public class Subsystem3 {
                         
                         break;
                     case ALL_TRANSACTIONS:
-                        
+                        response = getAllTransactions();
                         break;
                 }
                 

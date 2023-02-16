@@ -5,7 +5,9 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,10 +15,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -33,12 +37,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Adresa.findByUlicaBroj", query = "SELECT a FROM Adresa a WHERE a.broj = :broj AND a.ulica = :ulica")})
 public class Adresa implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "idAdresa")
-    private Integer idAdresa;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 45)
@@ -48,6 +46,15 @@ public class Adresa implements Serializable {
     @NotNull
     @Column(name = "Broj")
     private int broj;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idAdresa")
+    private List<Korisnik> korisnikList;
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "idAdresa")
+    private Integer idAdresa;
 
     public Adresa() {
     }
@@ -70,21 +77,6 @@ public class Adresa implements Serializable {
         this.idAdresa = idAdresa;
     }
 
-    public String getUlica() {
-        return ulica;
-    }
-
-    public void setUlica(String ulica) {
-        this.ulica = ulica;
-    }
-
-    public int getBroj() {
-        return broj;
-    }
-
-    public void setBroj(int broj) {
-        this.broj = broj;
-    }
 
     @Override
     public int hashCode() {
@@ -109,6 +101,32 @@ public class Adresa implements Serializable {
     @Override
     public String toString() {
         return "entities.Adresa[ idAdresa=" + idAdresa + " ]";
+    }
+
+
+    @XmlTransient
+    public List<Korisnik> getKorisnikList() {
+        return korisnikList;
+    }
+
+    public void setKorisnikList(List<Korisnik> korisnikList) {
+        this.korisnikList = korisnikList;
+    }
+
+    public String getUlica() {
+        return ulica;
+    }
+
+    public void setUlica(String ulica) {
+        this.ulica = ulica;
+    }
+
+    public int getBroj() {
+        return broj;
+    }
+
+    public void setBroj(int broj) {
+        this.broj = broj;
     }
     
 }

@@ -221,6 +221,13 @@ public class Subsystem1 {
                 txtmsgSub2.setFloatProperty("newBalance", user.getNovac());
           
                 subsystem2_producer.send(subsystem1_subsystem2_queue, txtmsgSub2);
+                
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", WIRE_MONEY_TO_USER);
+                txtmsgSub3.setStringProperty("username", user.getKorisnickoIme());
+                txtmsgSub3.setFloatProperty("newBalance", user.getNovac());
+          
+                subsystem2_producer.send(subsystem1_subsystem3_queue, txtmsgSub3);
             
             
         }
@@ -396,6 +403,27 @@ public class Subsystem1 {
         return textMessage;
     }
     
+    private void decreaseUserBalance(String username, float moneyToDecrease) 
+    {
+        Korisnik user = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList().get(0);
+        
+        user.setNovac(user.getNovac()-moneyToDecrease);
+        
+        try {
+                    em.getTransaction().begin();
+                    em.persist(user);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {
+                    e.printStackTrace();
+            }
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+    }
 
     private void subsystem2Listener(Message msg) 
     {
@@ -404,14 +432,16 @@ public class Subsystem1 {
     
     private void subsystem3Listener(Message msg) 
     {
+        
+        
          try {
-            switch(msg.getIntProperty("request"))
+            switch(msg.getByteProperty("request"))
             {
-                case WIRE_MONEY_TO_USER: 
+                case 3: //DECREASE_USER_BALLANCE in subsystem3
                     String monneyUpdate = msg.getStringProperty("moneyToUpdate");
                     String username = msg.getStringProperty("username");
             
-                    wireMoneyToUser(username, Float.parseFloat(monneyUpdate));
+                    decreaseUserBalance(username, Float.parseFloat(monneyUpdate));
                 break;
             }
         } catch (JMSException ex) {
