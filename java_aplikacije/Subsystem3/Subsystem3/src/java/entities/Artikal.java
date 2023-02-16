@@ -5,7 +5,9 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,10 +15,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -34,12 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Artikal.findByPopust", query = "SELECT a FROM Artikal a WHERE a.popust = :popust")})
 public class Artikal implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "idArtikal")
-    private Integer idArtikal;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 45)
@@ -56,6 +55,17 @@ public class Artikal implements Serializable {
     @NotNull
     @Column(name = "Popust")
     private int popust;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "artikal")
+    private List<Sadrzi> sadrziList;
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "idArtikal")
+    private Integer idArtikal;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "idArtikal")
+    private Stavka stavka;
 
     public Artikal() {
     }
@@ -77,6 +87,47 @@ public class Artikal implements Serializable {
 
     public void setIdArtikal(Integer idArtikal) {
         this.idArtikal = idArtikal;
+    }
+
+
+    public Stavka getStavka() {
+        return stavka;
+    }
+
+    public void setStavka(Stavka stavka) {
+        this.stavka = stavka;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (idArtikal != null ? idArtikal.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Artikal)) {
+            return false;
+        }
+        Artikal other = (Artikal) object;
+        if ((this.idArtikal == null && other.idArtikal != null) || (this.idArtikal != null && !this.idArtikal.equals(other.idArtikal))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "entities.Artikal[ idArtikal=" + idArtikal + " ]";
+    }
+    @XmlTransient
+    public List<Sadrzi> getSadrziList() {
+        return sadrziList;
+    }
+    public void setSadrziList(List<Sadrzi> sadrziList) {
+        this.sadrziList = sadrziList;
     }
 
     public String getNaziv() {
@@ -109,31 +160,6 @@ public class Artikal implements Serializable {
 
     public void setPopust(int popust) {
         this.popust = popust;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (idArtikal != null ? idArtikal.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Artikal)) {
-            return false;
-        }
-        Artikal other = (Artikal) object;
-        if ((this.idArtikal == null && other.idArtikal != null) || (this.idArtikal != null && !this.idArtikal.equals(other.idArtikal))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "entities.Artikal[ idArtikal=" + idArtikal + " ]";
     }
     
 }

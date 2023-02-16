@@ -56,19 +56,19 @@ public class Subsystem1 {
     
     @Resource(lookup="subsystem1_subsystem2_queue")
     static Queue subsystem1_subsystem2_queue; // producer
-    JMSProducer subsystem1_subsystem2_producer;
+    JMSProducer subsystem2_producer;
     
     @Resource(lookup="subsystem2_subsystem1_queue")
     static Queue subsystem2_subsystem1_queue; // consumer
-    JMSConsumer subsystem2_subsystem1_consumer;
+    JMSConsumer subsystem2_consumer;
     
     @Resource(lookup="subsystem1_subsystem3_queue")
     static Queue subsystem1_subsystem3_queue; // producer
-    JMSProducer subsystem1_subsystem3_producer;
+    JMSProducer subsystem3_producer;
     
     @Resource(lookup="subsystem3_subsystem1_queue")
     static Queue subsystem3_subsystem1_queue; // consumer
-    JMSConsumer subsystem3_subsystem1_consumer;
+    JMSConsumer subsystem3_consumer;
     
     JMSContext context;
     JMSConsumer consumer;
@@ -87,63 +87,91 @@ public class Subsystem1 {
             user.setIme(firstName);
             user.setPrezime(lastName);
             user.setSifra(password);     
-            user.setNovac(1000);
+            user.setNovac(0);
+            
+            List<Korisnik> users = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", userName).getResultList();
+        
+            Korisnik userControlVar = (users.isEmpty()? null : users.get(0));
             
             
-        List<Grad> cities = em.createNamedQuery("Grad.findByNazivDrzava", Grad.class).
+            List<Grad> cities = em.createNamedQuery("Grad.findByNazivDrzava", Grad.class).
                 setParameter("naziv", cityName).
                 setParameter("drzava", cityCountry).
                 getResultList();
         
-        Grad cityControlVar = (cities.isEmpty()? null : cities.get(0));
+            Grad cityControlVar = (cities.isEmpty()? null : cities.get(0));
         
-        List<Adresa> addressess = em.createNamedQuery("Adresa.findByUlicaBroj", Adresa.class).
+            List<Adresa> addressess = em.createNamedQuery("Adresa.findByUlicaBroj", Adresa.class).
                 setParameter("ulica", streetName).
                 setParameter("broj", Integer.parseInt(streetNumber)).
                 getResultList();
         
-        Adresa addressControlVar = (addressess.isEmpty()? null : addressess.get(0));
+            Adresa addressControlVar = (addressess.isEmpty()? null : addressess.get(0));
         
         
         
-        String responseText = "";
-        int returnStatus=0;
+            String responseText = "";
+            int returnStatus=0;
         
-        if(cityControlVar == null) 
-        {
-            responseText = "Specified city is not in database";
-            returnStatus = -1;
-        }
-        else if (addressControlVar == null) 
-        {
-            responseText = "Specified adress is not in database";
-            returnStatus = -1;
-        }
-        else 
-        {
-            
-            user.setIdGrad(cityControlVar);
-            user.setIdAdresa(addressControlVar);
-            
-            
-            try {
-                    em.getTransaction().begin();
-                    em.persist(user);
-                    em.getTransaction().commit();
-            } catch (ConstraintViolationException e) {e.printStackTrace();}
-            finally 
+            if(cityControlVar == null) 
             {
-                 if (em.getTransaction().isActive())
-                        em.getTransaction().rollback();
+                responseText = "Specified city is not in database";
+                returnStatus = -1;
             }
-        }
+            else if (addressControlVar == null) 
+            {
+                responseText = "Specified adress is not in database";
+                returnStatus = -1;
+            }
+            else if (userControlVar!=null) 
+            {
+                responseText = "User is already in database";
+                returnStatus = -1;
+            }
+            else 
+            {
             
-        textMessage = context.createTextMessage(responseText);
-        textMessage.setIntProperty("status", returnStatus);
+                user.setIdGrad(cityControlVar);
+                user.setIdAdresa(addressControlVar);
             
-        } catch (JMSException ex) {
+            
+                try {
+                        em.getTransaction().begin();
+                        em.persist(user);
+                        em.getTransaction().commit();
+                } catch (ConstraintViolationException e) {e.printStackTrace();}
+                finally 
+                {
+                    if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+                }
+            
+                TextMessage txtmsgSub2 = context.createTextMessage("sinhronizacija");
+                txtmsgSub2.setByteProperty("request", CREATE_USER);
+                txtmsgSub2.setStringProperty("username", userName);
+                txtmsgSub2.setStringProperty("password", password);
+          
+                subsystem2_producer.send(subsystem1_subsystem2_queue, txtmsgSub2);
+            
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", CREATE_USER);
+                txtmsgSub3.setStringProperty("username", userName);
+                txtmsgSub3.setStringProperty("cityName", cityName);
+                txtmsgSub3.setStringProperty("cityCountry", cityCountry);
+                txtmsgSub3.setStringProperty("streetName", streetName);
+                txtmsgSub3.setStringProperty("streetNumber", streetNumber);
+            
+                subsystem3_producer.send(subsystem1_subsystem3_queue, txtmsgSub3);
+            
+            }
+            
+            textMessage = context.createTextMessage(responseText);
+            textMessage.setIntProperty("status", returnStatus);
+            
+            } catch (JMSException ex) {
             Logger.getLogger(Subsystem1.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            }
         
         return textMessage;
     }
@@ -171,6 +199,7 @@ public class Subsystem1 {
         }
         else 
         {
+            
             user.setNovac(funds+user.getNovac());
             
             try {
@@ -185,6 +214,15 @@ public class Subsystem1 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+                TextMessage txtmsgSub2 = context.createTextMessage("sinhronizacija");
+                txtmsgSub2.setByteProperty("request", WIRE_MONEY_TO_USER);
+                txtmsgSub2.setStringProperty("username", user.getKorisnickoIme());
+                txtmsgSub2.setFloatProperty("newBalance", user.getNovac());
+          
+                subsystem2_producer.send(subsystem1_subsystem2_queue, txtmsgSub2);
+            
+            
         }
             
         textMessage = context.createTextMessage(responseText);
@@ -246,6 +284,16 @@ public class Subsystem1 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", CHANGE_USER_ADDRESS);
+                txtmsgSub3.setStringProperty("username", userName);
+                txtmsgSub3.setStringProperty("street", street);
+                txtmsgSub3.setIntProperty("streetNumber", streetNumber);
+            
+                subsystem3_producer.send(subsystem1_subsystem3_queue, txtmsgSub3);
+            
+            
         }
             
         textMessage = context.createTextMessage(responseText);
@@ -326,6 +374,16 @@ public class Subsystem1 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+            //Salje se informacija podsistemu3 da treba da kreira grad u svojoj bazi
+            
+            TextMessage txtmsg = context.createTextMessage("sinhronizacija");
+            txtmsg.setByteProperty("request", CREATE_CITY);
+            txtmsg.setStringProperty("cityName", cityName);
+            txtmsg.setStringProperty("cityCountry", cityCountry);
+            
+            subsystem3_producer.send(subsystem1_subsystem3_queue, txtmsg);
+            
         }
             
         textMessage = context.createTextMessage(responseText);
@@ -339,9 +397,28 @@ public class Subsystem1 {
     }
     
 
-    private void subsystem2Listener(Message msg) {}
+    private void subsystem2Listener(Message msg) 
+    {
+        
+    }
     
-    private void subsystem3Listener(Message msg) {}
+    private void subsystem3Listener(Message msg) 
+    {
+         try {
+            switch(msg.getIntProperty("request"))
+            {
+                case WIRE_MONEY_TO_USER: 
+                    String monneyUpdate = msg.getStringProperty("moneyToUpdate");
+                    String username = msg.getStringProperty("username");
+            
+                    wireMoneyToUser(username, Float.parseFloat(monneyUpdate));
+                break;
+            }
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+ 
+    }
     
     private void run() 
     {
@@ -353,11 +430,14 @@ public class Subsystem1 {
         producer = context.createProducer();
         
         
-//        subsystem1_subsystem2_producer = context.createProducer();
-//        subsystem2_subsystem1_consumer = context.createConsumer(subsystem2_subsystem1_queue);
-//        
-//        subsystem1_subsystem3_producer = context.createProducer();
-//        subsystem3_subsystem1_consumer = context.createConsumer(subsystem3_subsystem1_queue);
+        subsystem2_producer = context.createProducer();
+        subsystem2_consumer = context.createConsumer(subsystem2_subsystem1_queue);
+        subsystem2_consumer.setMessageListener((Message msg) -> { subsystem2Listener(msg); });
+        
+        subsystem3_producer = context.createProducer();
+        subsystem3_consumer = context.createConsumer(subsystem3_subsystem1_queue);
+        subsystem3_consumer.setMessageListener((Message msg) -> { subsystem3Listener(msg); });
+        
         
         
         String cityName, cityCountry, username, userFirstName, userLastName,

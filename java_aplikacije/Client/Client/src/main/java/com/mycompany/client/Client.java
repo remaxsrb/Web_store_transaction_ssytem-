@@ -264,10 +264,13 @@ public class Client {
                
                 case USER_ORDERS:
                     
+                    System.out.println("Korisnicko ime korisnika: ");
+                    username = input.readLine();
+                    getUserOrders(username);
                     break;
                
                 case ALL_ORDERS:
-                    
+                    getAllOrders();
                     break;
              
                 case ALL_TRANSACTIONS:
@@ -922,5 +925,94 @@ public class Client {
             
         } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
     }
+    
+    private void getUserOrders(String username) 
+    {
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/order/viewOrders/"+username;
+        URLAddress = URLAddress.replace(" ", "%20");
+        
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] orders = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
+
+                System.out.println("Narudzbine za korisnika: ");
+               
+                for (String order : orders) 
+                {     
+                    
+                    System.out.println(order); 
+                }
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
+    }
+    
+    private void getAllOrders() 
+    {
+        String URL_errMsg = "Greska pri formiranju URL";
+        
+        
+        String URLAddress = "http://localhost:8080/Server/store/order/viewOrders";
+        URLAddress = URLAddress.replace(" ", "%20");
+        
+        String inputString = null;
+        int responseCode = 0;
+        
+        try {
+            URL url = new URL(URLAddress);
+            
+            try {
+                HttpURLConnection myHttpConnection = (HttpURLConnection) url.openConnection();
+                myHttpConnection.setRequestMethod("GET");
+                
+                responseCode = myHttpConnection.getResponseCode();
+                
+                System.out.format("Connecting to %s\nConnection Method: '%s'\nResponse Code is: %d\n", URLAddress, "GET", responseCode);
+                
+                System.out.println("----------------------[ RESPONSE ]------------------------");
+                
+                BufferedReader incoming = new BufferedReader(new InputStreamReader(myHttpConnection.getInputStream()));
+                
+                String [] orders = trimIncomingString(incoming.readLine());
+                
+                incoming.close();   
+
+                System.out.println("Narudzbine: ");
+               
+                for (String order : orders) 
+                {     
+                    
+                    System.out.println(order); 
+                }
+		System.out.println("-----------------------------------------------------------");
+       
+            } catch (IOException e) {e.printStackTrace();}
+            
+        } catch (MalformedURLException e) {System.out.println(URL_errMsg);}
+    }
+    
     
 }

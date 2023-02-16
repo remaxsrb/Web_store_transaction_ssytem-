@@ -33,6 +33,9 @@ import javax.validation.ConstraintViolationException;
  */
 public class Subsystem2 {
     
+    private static final byte CREATE_USER = 2;
+    private static final byte WIRE_MONEY_TO_USER = 3;
+    
     private static final byte CREATE_CATEGORY = 5;
     private static final byte CREATE_ARTICLE = 6;
     private static final byte MODIFY_ARTICLE_PRICE = 7;
@@ -54,6 +57,23 @@ public class Subsystem2 {
     
     @Resource(lookup="KKP")
     static Queue serverQueue;
+    
+    @Resource(lookup="subsystem1_subsystem2_queue")
+    static Queue subsystem1_subsystem2_queue; // consumer
+    JMSConsumer subsystem1_consumer;
+    
+    @Resource(lookup="subsystem2_subsystem1_queue")
+    static Queue subsystem2_subsystem1_queue; // producer
+    JMSProducer subsystem1_producer;
+    
+    @Resource(lookup="subsystem2_subsystem3_queue")
+    static Queue subsystem2_subsystem3_queue; // producer
+    JMSProducer subsystem3_producer;
+    
+    @Resource(lookup="subsystem3_subsystem2_queue")
+    static Queue subsystem3_subsystem2_queue; // consumer
+    JMSConsumer subsystem3_consumer;
+    
     
     
     JMSContext context;
@@ -197,6 +217,7 @@ public class Subsystem2 {
             }
             article.setKategorija(categoryControlVar);
             article.setProdavac(userControlVar);
+            
             try {
                     em.getTransaction().begin();
                     em.persist(article);
@@ -210,6 +231,14 @@ public class Subsystem2 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", CREATE_ARTICLE);
+                txtmsgSub3.setStringProperty("articleName", articleName);
+                txtmsgSub3.setStringProperty("articleDescription", articleDescription);
+                txtmsgSub3.setFloatProperty("articlePrice", articlePrice);
+            
+                subsystem3_producer.send(subsystem2_subsystem3_queue, txtmsgSub3);
         }
             
         textMessage = context.createTextMessage(responseText);
@@ -257,6 +286,14 @@ public class Subsystem2 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", ADD_ARTICLE_DISCOUNT);
+                txtmsgSub3.setStringProperty("articleName", articleName);
+                txtmsgSub3.setIntProperty("discount", discount);
+            
+                subsystem3_producer.send(subsystem2_subsystem3_queue, txtmsgSub3);
+            
         }
             
         textMessage = context.createTextMessage(responseText);
@@ -304,6 +341,15 @@ public class Subsystem2 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", MODIFY_ARTICLE_PRICE);
+                txtmsgSub3.setStringProperty("articleName", articleName);
+                txtmsgSub3.setFloatProperty("newPrice", newPrice);
+            
+                subsystem3_producer.send(subsystem2_subsystem3_queue, txtmsgSub3);
+            
+            
         }
             
         textMessage = context.createTextMessage(responseText);
@@ -401,9 +447,14 @@ public class Subsystem2 {
             
             Sadrzi articleInCart = (articleInCartArr.isEmpty()? null : articleInCartArr.get(0));
             
+            float totalPrice = 0;
+            int numberOfArticlesInCart = articleAmmount;
+            
             if(articleInCart==null) 
             {
-                cart.setUkupnaCena(article.getCena() * articleAmmount);
+                
+                totalPrice = article.getCena() * numberOfArticlesInCart;
+                cart.setUkupnaCena(totalPrice);
             
                 Sadrzi addArticleToCart = new Sadrzi(cart.getIdKorpa(),article.getIdArtikal());
                 addArticleToCart.setKolicinaArtikla(articleAmmount);
@@ -422,12 +473,12 @@ public class Subsystem2 {
             }
             else 
             {
-                int newAmmount = articleInCart.getKolicinaArtikla() + articleAmmount;
-                articleInCart.setKolicinaArtikla(newAmmount);
+                numberOfArticlesInCart = articleInCart.getKolicinaArtikla() + articleAmmount;
+                articleInCart.setKolicinaArtikla(numberOfArticlesInCart);
                 
-                float newTotalPrice = cart.getUkupnaCena() + articleAmmount*article.getCena();
+                totalPrice = cart.getUkupnaCena() + articleAmmount*article.getCena();
                 
-                cart.setUkupnaCena(newTotalPrice);
+                cart.setUkupnaCena(totalPrice);
                 
                 try {
                     em.getTransaction().begin();
@@ -454,6 +505,16 @@ public class Subsystem2 {
                  if (em.getTransaction().isActive())
                         em.getTransaction().rollback();
             }
+            
+            
+            TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+            txtmsgSub3.setByteProperty("request", ADD_TO_CART);
+            txtmsgSub3.setStringProperty("user", user);
+            txtmsgSub3.setStringProperty("articleName", articleName);
+            txtmsgSub3.setFloatProperty("totalPrice", totalPrice);
+            txtmsgSub3.setIntProperty("numberOfArticlesInCart", numberOfArticlesInCart);
+            
+            subsystem3_producer.send(subsystem2_subsystem3_queue, txtmsgSub3);
             
         }
             
@@ -514,6 +575,7 @@ public class Subsystem2 {
             
             Sadrzi articleInCart = (articleInCartArr.isEmpty()? null : articleInCartArr.get(0));
             
+            
             if(articleInCart==null) 
             {
                 responseText = "Article is not in cart!";
@@ -521,12 +583,15 @@ public class Subsystem2 {
             else 
             {
                 
+                float totalPrice = 0;
+                int numberOfArticlesInCart = 0;
+                
                 if(articleInCart.getKolicinaArtikla() <= articleAmmount) 
                 {
                     
-                    float newTotalPrice = cart.getUkupnaCena() - articleInCart.getKolicinaArtikla()*article.getCena();
+                    totalPrice = cart.getUkupnaCena() - articleInCart.getKolicinaArtikla()*article.getCena();
                     
-                    cart.setUkupnaCena(newTotalPrice);
+                    cart.setUkupnaCena(totalPrice);
                     
                     try {
                     em.getTransaction().begin();
@@ -542,13 +607,13 @@ public class Subsystem2 {
                 }
                 else 
                 {
-                    float newTotalPrice = cart.getUkupnaCena() - articleAmmount*article.getCena();
+                    totalPrice = cart.getUkupnaCena() - articleAmmount*article.getCena();
                     
-                    cart.setUkupnaCena(newTotalPrice);
+                    cart.setUkupnaCena(totalPrice);
                     
-                    int newArticleAmmount = articleInCart.getKolicinaArtikla() - articleAmmount;
+                    numberOfArticlesInCart = articleInCart.getKolicinaArtikla() - articleAmmount;
                     
-                    articleInCart.setKolicinaArtikla(newArticleAmmount);
+                    articleInCart.setKolicinaArtikla(numberOfArticlesInCart);
                     
                     
                     try {
@@ -576,6 +641,17 @@ public class Subsystem2 {
                         if (em.getTransaction().isActive())
                                 em.getTransaction().rollback();
                     }
+                
+                
+                
+                TextMessage txtmsgSub3 = context.createTextMessage("sinhronizacija");
+                txtmsgSub3.setByteProperty("request", REMOVE_FROM_CART);
+                txtmsgSub3.setStringProperty("user", user);
+                txtmsgSub3.setStringProperty("articleName", articleName);
+                txtmsgSub3.setFloatProperty("totalPrice", totalPrice);
+                txtmsgSub3.setIntProperty("numberOfArticlesInCart", numberOfArticlesInCart);
+            
+                subsystem3_producer.send(subsystem2_subsystem3_queue, txtmsgSub3);
                 
             }
             
@@ -633,6 +709,114 @@ public class Subsystem2 {
         return context.createObjectMessage(returnStrings);
     }
     
+    private void createUser(String username, String password) 
+    {
+        Korisnik newUser = new Korisnik(username);
+        
+        newUser.setSifra(password);
+        newUser.setNovac(0);
+        
+        try {
+                    em.getTransaction().begin();
+                    em.persist(newUser);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {e.printStackTrace();}
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        
+        Korpa cart = new Korpa();
+        
+        Korisnik mostRecentlyAddedUser = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList().get(0);
+        
+        cart.setKorisnickoIme(mostRecentlyAddedUser);
+        cart.setUkupnaCena(0);
+        
+        try {
+                    em.getTransaction().begin();
+                    em.persist(cart);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {e.printStackTrace();}
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+        
+    }
+    
+    private void updateUserBalance(String username, float newBalance) 
+    {
+         Korisnik user = em.createNamedQuery("Korisnik.findByKorisnickoIme", Korisnik.class).
+                setParameter("korisnickoIme", username).
+                getResultList().get(0);
+         
+         user.setNovac(newBalance);
+         
+         try {
+                    em.getTransaction().begin();
+                    em.persist(user);
+                    em.getTransaction().commit();
+            } catch (ConstraintViolationException e) {e.printStackTrace();}
+            finally 
+            {
+                 if (em.getTransaction().isActive())
+                        em.getTransaction().rollback();
+            }
+         
+    }
+    
+    private void subsystem1Listener(Message msg) 
+    {
+        String username;
+        
+        try {
+            switch(msg.getIntProperty("request"))
+            {
+                case CREATE_USER: 
+                    
+                    username = msg.getStringProperty("username");
+                    String password = msg.getStringProperty("password");
+                    
+                    createUser(username, password);
+                    break;
+                case WIRE_MONEY_TO_USER:
+                    username = msg.getStringProperty("username");
+                    float newBalance = msg.getFloatProperty("newBalance");
+                    updateUserBalance(username, newBalance);
+                    break;
+            }
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void subsystem3Listener(Message msg) 
+    {
+        String username, articleName;
+        int ammount;
+        
+        try {
+            switch(msg.getIntProperty("request"))
+            {
+                case REMOVE_FROM_CART: 
+                    
+                    username = msg.getStringProperty("username");
+                    articleName = msg.getStringProperty("articleName");
+                    ammount = msg.getIntProperty("ammount");
+                    removeFromCart(articleName, ammount,username);
+                    break;
+                
+            }
+        } catch (JMSException ex) {
+            Logger.getLogger(Subsystem2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     private void run() 
     {
         String msgSelector = "podsistem=2";
@@ -641,6 +825,16 @@ public class Subsystem2 {
         context.setClientID("2");
         consumer = context.createDurableConsumer(topic, "sub2", msgSelector, false);
         producer = context.createProducer();
+        
+        
+        subsystem1_producer = context.createProducer();
+        subsystem1_consumer = context.createConsumer(subsystem1_subsystem2_queue);
+        subsystem1_consumer.setMessageListener((Message msg) -> { subsystem1Listener(msg); });
+        
+        subsystem3_producer = context.createProducer();
+        subsystem3_consumer = context.createConsumer(subsystem2_subsystem3_queue);
+        subsystem3_consumer.setMessageListener((Message msg) -> { subsystem3Listener(msg); });
+        
         
         String categoryName, superCategoryName, articleName, articlePrice, 
                 articleDescription, articleCategory, articleDiscount, 

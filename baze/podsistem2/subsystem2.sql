@@ -39,7 +39,7 @@ CREATE TABLE `Artikal` (
   KEY `fk_Prodavac_idx` (`Prodavac`),
   CONSTRAINT `fk_Kategorija` FOREIGN KEY (`Kategorija`) REFERENCES `Kategorija` (`idKategorija`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_Prodavac` FOREIGN KEY (`Prodavac`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -120,7 +120,7 @@ CREATE TABLE `Korpa` (
   UNIQUE KEY `idKorpa_UNIQUE` (`idKorpa`),
   UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`),
   CONSTRAINT `fk_Korisnik` FOREIGN KEY (`KorisnickoIme`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -129,6 +129,7 @@ CREATE TABLE `Korpa` (
 
 LOCK TABLES `Korpa` WRITE;
 /*!40000 ALTER TABLE `Korpa` DISABLE KEYS */;
+INSERT INTO `Korpa` VALUES (1,0,'jokan'),(2,0,'remax');
 /*!40000 ALTER TABLE `Korpa` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -168,4 +169,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-14 22:52:45
+-- Dump completed on 2023-02-16  2:43:50

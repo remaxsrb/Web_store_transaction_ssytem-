@@ -65,7 +65,7 @@ CREATE TABLE `Grad` (
 
 LOCK TABLES `Grad` WRITE;
 /*!40000 ALTER TABLE `Grad` DISABLE KEYS */;
-INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Prizren','Srbija'),(4,'Nis','Srbija'),(6,'Cacak','Srbija');
+INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Prizren','Srbija'),(4,'Nis','Srbija');
 /*!40000 ALTER TABLE `Grad` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,7 +99,7 @@ CREATE TABLE `Korisnik` (
 
 LOCK TABLES `Korisnik` WRITE;
 /*!40000 ALTER TABLE `Korisnik` DISABLE KEYS */;
-INSERT INTO `Korisnik` VALUES ('jokan','123','Slavisa','Jokanovic',1,1,50000),('remax','123','Marko','Jovanovic',2,1,20000);
+INSERT INTO `Korisnik` VALUES ('jokan','123','Slavisa','Jokanovic',3,1,50000),('remax','123','Marko','Jovanovic',4,1,20000);
 /*!40000 ALTER TABLE `Korisnik` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -112,4 +112,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-14  1:50:34
+-- Dump completed on 2023-02-16  2:37:59

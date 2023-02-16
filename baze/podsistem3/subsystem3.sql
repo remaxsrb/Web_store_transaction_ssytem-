@@ -99,6 +99,66 @@ INSERT INTO `Grad` VALUES (1,'Beograd','Srbija'),(2,'Novi Sad','Srbija'),(3,'Nis
 UNLOCK TABLES;
 
 --
+-- Table structure for table `Korisnik`
+--
+
+DROP TABLE IF EXISTS `Korisnik`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Korisnik` (
+  `KorisnickoIme` varchar(45) NOT NULL,
+  `idGrad` int unsigned NOT NULL,
+  `idAdresa` int unsigned NOT NULL,
+  `Novac` float unsigned NOT NULL,
+  PRIMARY KEY (`KorisnickoIme`),
+  UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`),
+  KEY `fk_Adresa_idx` (`idAdresa`),
+  KEY `fk_Adresa_s3_idx` (`idAdresa`),
+  KEY `fk_Grad_s3_idx` (`idGrad`),
+  CONSTRAINT `fk_Adresa_s3` FOREIGN KEY (`idAdresa`) REFERENCES `Adresa` (`idAdresa`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_Grad_s3` FOREIGN KEY (`idGrad`) REFERENCES `Grad` (`idGrad`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Korisnik`
+--
+
+LOCK TABLES `Korisnik` WRITE;
+/*!40000 ALTER TABLE `Korisnik` DISABLE KEYS */;
+INSERT INTO `Korisnik` VALUES ('jokan',1,1,50000),('remax',1,2,20000);
+/*!40000 ALTER TABLE `Korisnik` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `Korpa`
+--
+
+DROP TABLE IF EXISTS `Korpa`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Korpa` (
+  `idKorpa` int unsigned NOT NULL AUTO_INCREMENT,
+  `UkupnaCena` float unsigned NOT NULL,
+  `Korisnik` varchar(45) NOT NULL,
+  PRIMARY KEY (`idKorpa`),
+  UNIQUE KEY `idKorpa_UNIQUE` (`idKorpa`),
+  UNIQUE KEY `Korisnik_UNIQUE` (`Korisnik`),
+  KEY `fk_Korpa_s3_1_idx` (`Korisnik`),
+  CONSTRAINT `fk_Korpa_s3_1` FOREIGN KEY (`Korisnik`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Korpa`
+--
+
+LOCK TABLES `Korpa` WRITE;
+/*!40000 ALTER TABLE `Korpa` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Korpa` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `Narudzbina`
 --
 
@@ -109,14 +169,11 @@ CREATE TABLE `Narudzbina` (
   `idNarudzbina` int unsigned NOT NULL AUTO_INCREMENT,
   `UkupnaCena` float unsigned NOT NULL,
   `VremeKreiranja` datetime NOT NULL,
-  `Adresa` int unsigned NOT NULL,
-  `Grad` int unsigned NOT NULL,
+  `Korisnik` varchar(45) NOT NULL,
   PRIMARY KEY (`idNarudzbina`),
   UNIQUE KEY `idNarudzbina_UNIQUE` (`idNarudzbina`),
-  KEY `fk_Adresa_idx` (`Adresa`),
-  KEY `fk_Grad_idx` (`Grad`),
-  CONSTRAINT `fk_Adresa` FOREIGN KEY (`Adresa`) REFERENCES `Adresa` (`idAdresa`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_Grad` FOREIGN KEY (`Grad`) REFERENCES `Grad` (`idGrad`) ON DELETE RESTRICT ON UPDATE CASCADE
+  KEY `fk_Narudzbina_1_idx` (`Korisnik`),
+  CONSTRAINT `fk_Narudzbina_1` FOREIGN KEY (`Korisnik`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -127,6 +184,33 @@ CREATE TABLE `Narudzbina` (
 LOCK TABLES `Narudzbina` WRITE;
 /*!40000 ALTER TABLE `Narudzbina` DISABLE KEYS */;
 /*!40000 ALTER TABLE `Narudzbina` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `Sadrzi`
+--
+
+DROP TABLE IF EXISTS `Sadrzi`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Sadrzi` (
+  `idKorpa` int unsigned NOT NULL,
+  `idArtikal` int unsigned NOT NULL,
+  `KolicinaArtikla` int unsigned NOT NULL,
+  PRIMARY KEY (`idKorpa`,`idArtikal`),
+  KEY `fk_Sadrzi_s3_2_idx` (`idArtikal`),
+  CONSTRAINT `fk_Sadrzi_s3_1` FOREIGN KEY (`idKorpa`) REFERENCES `Korpa` (`idKorpa`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_Sadrzi_s3_2` FOREIGN KEY (`idArtikal`) REFERENCES `Artikal` (`idArtikal`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Sadrzi`
+--
+
+LOCK TABLES `Sadrzi` WRITE;
+/*!40000 ALTER TABLE `Sadrzi` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Sadrzi` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -145,7 +229,9 @@ CREATE TABLE `Stavka` (
   PRIMARY KEY (`idStavka`),
   UNIQUE KEY `idStavka_UNIQUE` (`idStavka`),
   UNIQUE KEY `idNarudzbina_UNIQUE` (`idNarudzbina`),
-  UNIQUE KEY `idArtikal_UNIQUE` (`idArtikal`)
+  UNIQUE KEY `idArtikal_UNIQUE` (`idArtikal`),
+  CONSTRAINT `fk_Artikal_s3` FOREIGN KEY (`idArtikal`) REFERENCES `Artikal` (`idArtikal`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_Narudzbina` FOREIGN KEY (`idNarudzbina`) REFERENCES `Narudzbina` (`idNarudzbina`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -172,7 +258,8 @@ CREATE TABLE `Transakcija` (
   `idNarudzbina` int unsigned NOT NULL,
   PRIMARY KEY (`idTransakcija`),
   UNIQUE KEY `idTransakcija_UNIQUE` (`idTransakcija`),
-  UNIQUE KEY `idNarudzbina_UNIQUE` (`idNarudzbina`)
+  UNIQUE KEY `idNarudzbina_UNIQUE` (`idNarudzbina`),
+  CONSTRAINT `fk_Transakcija` FOREIGN KEY (`idTransakcija`) REFERENCES `Transakcija` (`idTransakcija`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -194,4 +281,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-06 17:44:59
+-- Dump completed on 2023-02-16  2:37:26
