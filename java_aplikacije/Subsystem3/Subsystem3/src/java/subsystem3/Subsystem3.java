@@ -352,7 +352,7 @@ public class Subsystem3 {
                     cart.setUkupnaCena(0);
                     try {
                             em.getTransaction().begin();
-                            em.remove(cart);
+                            em.persist(cart);
                             em.getTransaction().commit();
                         } catch (ConstraintViolationException e) { e.printStackTrace();}
                         finally 

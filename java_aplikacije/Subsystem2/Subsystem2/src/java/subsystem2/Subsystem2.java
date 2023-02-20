@@ -838,7 +838,7 @@ public class Subsystem2 {
         subsystem1_consumer.setMessageListener((Message msg) -> { subsystem1Listener(msg); });
         
         subsystem3_producer = context.createProducer();
-        subsystem3_consumer = context.createConsumer(subsystem2_subsystem3_queue);
+        subsystem3_consumer = context.createConsumer(subsystem3_subsystem2_queue);
         subsystem3_consumer.setMessageListener((Message msg) -> { subsystem3Listener(msg); });
         
         
