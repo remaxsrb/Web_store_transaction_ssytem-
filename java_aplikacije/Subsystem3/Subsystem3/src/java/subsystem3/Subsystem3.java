@@ -217,10 +217,10 @@ public class Subsystem3 {
             {
                 
                 Korpa cart = em.createNamedQuery("Korpa.findByKorisnickoIme", Korpa.class).
-                setParameter("korisnickoIme", user).
+                setParameter("korisnik", user).
                 getResultList().get(0);
                 
-                List<Sadrzi> articlesInCart = em.createNamedQuery("Sadrzi.findByArtikalKorpa", Sadrzi.class).
+                List<Sadrzi> articlesInCart = em.createNamedQuery("Sadrzi.findByIdKorpa", Sadrzi.class).
                 setParameter("idKorpa", cart.getIdKorpa()).
                 getResultList();
             
@@ -239,12 +239,11 @@ public class Subsystem3 {
                 }
                 else 
                 {
-                    Date timeOfCreation = new Date();
                     
                     Narudzbina order = new Narudzbina();
                     order.setKorisnik(user);
                     order.setUkupnaCena(cart.getUkupnaCena());
-                    order.setVremeKreiranja(timeOfCreation);
+                    order.setVremeKreiranja(new Date());
                     
                     try {
                         em.getTransaction().begin();
@@ -256,9 +255,9 @@ public class Subsystem3 {
                         if (em.getTransaction().isActive())
                                 em.getTransaction().rollback();
                     }
+                   
                     
-                    Narudzbina newCreatedOrder = em.createNamedQuery("Narudzbina.findByVremeKreiranja", Narudzbina.class).
-                    setParameter("vremeKreiranja", timeOfCreation).
+                    Narudzbina newCreatedOrder = em.createNamedQuery("Narudzbina.findByIdDesc", Narudzbina.class).
                     getResultList().get(0);
                     
                     for (Sadrzi articleInCart : articlesInCart) 
@@ -282,13 +281,12 @@ public class Subsystem3 {
                         
                     }
                     
-                    Date timeOfPayment = new Date();
                     float moneyToBePayed = order.getUkupnaCena();
                     
                     Transakcija transaction = new Transakcija();
                     transaction.setIdNarudzbina(order);
                     transaction.setSumaNovca(moneyToBePayed);
-                    transaction.setVremePlacanja(timeOfPayment);
+                    transaction.setVremePlacanja(new Date());
                     
                     try {
                             em.getTransaction().begin();

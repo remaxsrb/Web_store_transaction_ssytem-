@@ -39,7 +39,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Narudzbina.findByIdNarudzbina", query = "SELECT n FROM Narudzbina n WHERE n.idNarudzbina = :idNarudzbina"),
     @NamedQuery(name = "Narudzbina.findByUkupnaCena", query = "SELECT n FROM Narudzbina n WHERE n.ukupnaCena = :ukupnaCena"),
     @NamedQuery(name = "Narudzbina.findByVremeKreiranja", query = "SELECT n FROM Narudzbina n WHERE n.vremeKreiranja = :vremeKreiranja"),
-    @NamedQuery(name = "Narudzbina.findByKorisnickoIme", query = "SELECT n FROM Narudzbina n WHERE n.korisnik.korisnickoIme = :korisnickoIme")})
+    @NamedQuery(name = "Narudzbina.findByKorisnickoIme", query = "SELECT n FROM Narudzbina n WHERE n.korisnik.korisnickoIme = :korisnickoIme"),
+    @NamedQuery(name = "Narudzbina.findByIdDesc", query = "SELECT n FROM Narudzbina n order by n.idNarudzbina desc")})
 public class Narudzbina implements Serializable {
 
     @Basic(optional = false)
