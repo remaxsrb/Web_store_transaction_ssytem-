@@ -120,7 +120,7 @@ CREATE TABLE `Korpa` (
   UNIQUE KEY `idKorpa_UNIQUE` (`idKorpa`),
   UNIQUE KEY `KorisnickoIme_UNIQUE` (`KorisnickoIme`),
   CONSTRAINT `fk_Korisnik` FOREIGN KEY (`KorisnickoIme`) REFERENCES `Korisnik` (`KorisnickoIme`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -169,4 +169,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-16  2:43:50
+-- Dump completed on 2023-02-24 11:05:29
